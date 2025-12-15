@@ -782,6 +782,7 @@ Result<void> Brush::transformFaces(
 }
 
 Result<void> Brush::bevelEdge(
+  MapFormat mapFormat,
   const vm::bbox3d& worldBounds,
   const vm::segment3d& edge,
   const double distance,
@@ -797,8 +798,13 @@ Result<void> Brush::bevelEdge(
     return Error{"Edge not found in brush"};
   }
 
-  const auto* face1 = polyEdge->face();
-  const auto* face2 = polyEdge->twin()->face();
+  const auto* face1 = polyEdge->firstFace();
+  const auto* face2 = polyEdge->secondFace();
+
+  if (face1 == nullptr || face2 == nullptr)
+  {
+      return Error{"Edge must connect two faces to bevel"};
+  }
 
   if (!face1->payload().has_value() || !face2->payload().has_value())
   {
@@ -812,7 +818,7 @@ Result<void> Brush::bevelEdge(
   const auto n2 = bFace2.boundary().normal;
 
   auto nBevel = n1 + n2;
-  if (vm::length_squared(nBevel) < vm::Cd::almost_zero())
+  if (vm::squared_length(nBevel) < vm::constants<double>::almost_zero())
   {
     return Error{"Cannot bevel edge with opposing normals"};
   }
@@ -821,9 +827,25 @@ Result<void> Brush::bevelEdge(
   const auto pPlane = edge.start() - nBevel * distance;
   const vm::plane3d bevelPlane(pPlane, nBevel);
 
-  BrushFace newFace(bevelPlane);
-  newFace.setAttributes(bFace1.attributes());
+  // Construct a valid face from 3 points on the plane
+  // Generate two orthogonal vectors on the plane
+  const auto tangent = vm::normalize(vm::cross(nBevel, vm::get_abs_max_component_axis(nBevel) == vm::vec3d::axis(0) ? vm::vec3d::axis(1) : vm::vec3d::axis(0)));
+  const auto bitangent = vm::normalize(vm::cross(nBevel, tangent));
 
+  auto faceRes = BrushFace::create(
+      pPlane,
+      pPlane + tangent * 10.0,
+      pPlane + bitangent * 10.0,
+      bFace1.attributes(),
+      mapFormat
+  );
+
+  if (!faceRes)
+  {
+      return Error{"Failed to create bevel face"};
+  }
+  
+  BrushFace newFace = std::move(faceRes.value());
   return clip(worldBounds, newFace);
 }
 

@@ -201,6 +201,7 @@ public:
     bool uvLock = false);
 
   Result<void> bevelEdge(
+    MapFormat mapFormat,
     const vm::bbox3d& worldBounds,
     const vm::segment3d& edge,
     double distance,
