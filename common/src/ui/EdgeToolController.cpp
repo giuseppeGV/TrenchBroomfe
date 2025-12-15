@@ -34,6 +34,22 @@ public:
   {
   }
 
+  bool mouseDoubleClick(const InputState& inputState) override
+  {
+    if (!inputState.mouseButtonsPressed(MouseButtons::Left))
+    {
+      return false;
+    }
+
+    const auto hit = findDraggableHandle(inputState);
+    if (hit.isMatch())
+    {
+      m_tool.selectFaceLoop(hit.target<vm::segment3d>());
+      return true;
+    }
+    return false;
+  }
+
 private:
   bool equalHandles(const vm::segment3d& lhs, const vm::segment3d& rhs) const override
   {
@@ -41,14 +57,39 @@ private:
   }
 };
 
-class EdgeToolController::MoveEdgePart : public MovePartBase
-{
-public:
-  explicit MoveEdgePart(EdgeTool& tool)
-    : MovePartBase{tool, mdl::EdgeHandleManager::HandleHitType}
+  class EdgeToolController::MoveEdgePart : public MovePartBase
   {
-  }
-};
+  public:
+    explicit MoveEdgePart(EdgeTool& tool)
+      : MovePartBase{tool, mdl::EdgeHandleManager::HandleHitType}
+    {
+    }
+
+  protected:
+    bool shouldStartMove(const InputState& inputState) const override
+    {
+      return inputState.mouseButtonsPressed(MouseButtons::Left)
+             && (
+               inputState.modifierKeysPressed(ModifierKeys::None)
+               || inputState.modifierKeysPressed(ModifierKeys::Alt)
+               || inputState.modifierKeysPressed(ModifierKeys::CtrlCmd));
+    }
+
+    std::unique_ptr<GestureTracker> acceptMouseDrag(const InputState& inputState) override
+    {
+      if (inputState.mouseButtonsPressed(MouseButtons::Left))
+      {
+        m_tool.setBevelMode(inputState.modifierKeysPressed(ModifierKeys::CtrlCmd));
+      }
+
+      auto tracker = MovePartBase::acceptMouseDrag(inputState);
+      if (!tracker)
+      {
+        m_tool.setBevelMode(false);
+      }
+      return tracker;
+    }
+  };
 
 EdgeToolController::EdgeToolController(EdgeTool& tool)
   : VertexToolControllerBase{tool}

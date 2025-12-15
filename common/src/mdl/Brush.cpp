@@ -781,6 +781,52 @@ Result<void> Brush::transformFaces(
   return doTransformVertices(worldBounds, vertexPositions, transform, uvLock);
 }
 
+Result<void> Brush::bevelEdge(
+  const vm::bbox3d& worldBounds,
+  const vm::segment3d& edge,
+  const double distance,
+  const bool lockMaterial)
+{
+  contract_pre(m_geometry != nullptr);
+
+  const auto* polyEdge = m_geometry->findEdgeByPositions(
+    edge.start(), edge.end(), CloseVertexEpsilon);
+
+  if (polyEdge == nullptr)
+  {
+    return Error{"Edge not found in brush"};
+  }
+
+  const auto* face1 = polyEdge->face();
+  const auto* face2 = polyEdge->twin()->face();
+
+  if (!face1->payload().has_value() || !face2->payload().has_value())
+  {
+    return Error{"Brush faces are not fully specified"};
+  }
+
+  const auto& bFace1 = m_faces[*face1->payload()];
+  const auto& bFace2 = m_faces[*face2->payload()];
+
+  const auto n1 = bFace1.boundary().normal;
+  const auto n2 = bFace2.boundary().normal;
+
+  auto nBevel = n1 + n2;
+  if (vm::length_squared(nBevel) < vm::Cd::almost_zero())
+  {
+    return Error{"Cannot bevel edge with opposing normals"};
+  }
+  nBevel = vm::normalize(nBevel);
+
+  const auto pPlane = edge.start() - nBevel * distance;
+  const vm::plane3d bevelPlane(pPlane, nBevel);
+
+  BrushFace newFace(bevelPlane);
+  newFace.setAttributes(bFace1.attributes());
+
+  return clip(worldBounds, newFace);
+}
+
 Brush::CanTransformVerticesResult::CanTransformVerticesResult(
   const bool s, BrushGeometry&& g)
   : success{s}

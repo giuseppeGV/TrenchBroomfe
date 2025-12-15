@@ -21,6 +21,10 @@
 
 #include "ui/VertexToolBase.h"
 
+#include "mdl/Brush.h"
+#include "vm/vec.h"
+
+#include <map>
 #include <string>
 #include <vector>
 
@@ -46,11 +50,14 @@ class EdgeTool : public VertexToolBase<vm::segment3d>
 public:
   explicit EdgeTool(MapDocument& document);
 
-public:
-  std::vector<mdl::BrushNode*> findIncidentBrushes(const vm::segment3d& handle) const;
+  void setBevelMode(bool enabled);
+  bool bevelMode() const;
 
 private:
-  using VertexToolBase::findIncidentBrushes;
+  bool m_bevelMode = false;
+
+public:
+  std::vector<mdl::BrushNode*> findIncidentBrushes(const vm::segment3d& handle) const;
 
 public:
   void pick(
@@ -66,11 +73,21 @@ public:
   std::tuple<vm::vec3d, vm::vec3d> handlePositionAndHitPoint(
     const std::vector<mdl::Hit>& hits) const override;
 
+  bool startMove(const std::vector<mdl::Hit>& hits) override;
   MoveResult move(const vm::vec3d& delta) override;
+  void endMove() override;
+  void cancelMove() override;
+
+  std::string actionName() const override;
 
   std::string actionName() const override;
 
   void removeSelection();
+  void selectFaceLoop(const vm::segment3d& edge);
+
+private:
+  std::map<mdl::BrushNode*, mdl::Brush> m_initialBrushes;
+  vm::vec3d m_totalDelta;
 };
 
 } // namespace ui

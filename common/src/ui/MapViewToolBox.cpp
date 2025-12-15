@@ -33,6 +33,7 @@
 #include "ui/ScaleTool.h"
 #include "ui/ShearTool.h"
 #include "ui/VertexTool.h"
+#include "ui/RandomizeTool.h"
 
 #include "kd/contracts.h"
 
@@ -106,6 +107,11 @@ EdgeTool& MapViewToolBox::edgeTool()
 FaceTool& MapViewToolBox::faceTool()
 {
   return *m_faceTool;
+}
+
+RandomizeTool& MapViewToolBox::randomizeTool()
+{
+  return *m_randomizeTool;
 }
 
 void MapViewToolBox::toggleAssembleBrushTool()
@@ -241,10 +247,20 @@ bool MapViewToolBox::faceToolActive() const
   return m_faceTool->active();
 }
 
+void MapViewToolBox::toggleRandomizeTool()
+{
+  toggleTool(randomizeTool());
+}
+
+bool MapViewToolBox::randomizeToolActive() const
+{
+  return m_randomizeTool->active();
+}
+
 bool MapViewToolBox::anyModalToolActive() const
 {
   return rotateToolActive() || scaleToolActive() || shearToolActive()
-         || anyVertexToolActive();
+         || anyVertexToolActive() || randomizeToolActive();
 }
 
 void MapViewToolBox::moveVertices(const vm::vec3d& delta)
@@ -279,6 +295,7 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
   m_vertexTool = std::make_unique<VertexTool>(m_document);
   m_edgeTool = std::make_unique<EdgeTool>(m_document);
   m_faceTool = std::make_unique<FaceTool>(m_document);
+  m_randomizeTool = std::make_unique<RandomizeTool>(m_document);
 
   addExclusiveToolGroup(
     assembleBrushTool(),
@@ -287,10 +304,11 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
     shearTool(),
     edgeTool(),
     faceTool(),
-    clipTool());
+    clipTool(),
+    randomizeTool());
 
   addExclusiveToolGroup(
-    assembleBrushTool(), vertexTool(), edgeTool(), faceTool(), clipTool());
+    assembleBrushTool(), vertexTool(), edgeTool(), faceTool(), clipTool(), randomizeTool());
 
   suppressWhileActive(
     assembleBrushTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
@@ -301,6 +319,7 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
   suppressWhileActive(edgeTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
   suppressWhileActive(faceTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
   suppressWhileActive(clipTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
+  suppressWhileActive(randomizeTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
 
   registerTool(moveObjectsTool(), bookCtrl);
   registerTool(rotateTool(), bookCtrl);
@@ -312,6 +331,7 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
   registerTool(vertexTool(), bookCtrl);
   registerTool(edgeTool(), bookCtrl);
   registerTool(faceTool(), bookCtrl);
+  registerTool(randomizeTool(), bookCtrl);
   registerTool(createEntityTool(), bookCtrl);
   registerTool(drawShapeTool(), bookCtrl);
 
@@ -395,6 +415,10 @@ void MapViewToolBox::updateToolPage()
   else if (clipToolActive())
   {
     clipTool().showPage();
+  }
+  else if (randomizeToolActive())
+  {
+    randomizeTool().showPage();
   }
   else
   {

@@ -50,6 +50,7 @@ class ShearTool;
 class VertexTool;
 class EdgeTool;
 class FaceTool;
+class RandomizeTool;
 
 class MapViewToolBox : public ToolBox
 {
@@ -68,6 +69,7 @@ private:
   std::unique_ptr<VertexTool> m_vertexTool;
   std::unique_ptr<EdgeTool> m_edgeTool;
   std::unique_ptr<FaceTool> m_faceTool;
+  std::unique_ptr<RandomizeTool> m_randomizeTool;
 
   NotifierConnection m_notifierConnection;
 
@@ -88,6 +90,7 @@ public: // tools
   VertexTool& vertexTool();
   EdgeTool& edgeTool();
   FaceTool& faceTool();
+  RandomizeTool& randomizeTool();
 
   void toggleAssembleBrushTool();
   bool assembleBrushToolActive() const;
@@ -121,6 +124,9 @@ public: // tools
 
   void toggleFaceTool();
   bool faceToolActive() const;
+
+  void toggleRandomizeTool();
+  bool randomizeToolActive() const;
 
   bool anyModalToolActive() const;
 

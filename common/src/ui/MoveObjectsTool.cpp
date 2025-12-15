@@ -19,6 +19,61 @@
 
 #include "MoveObjectsTool.h"
 
+#include "mdl/BrushNode.h"
+#include "mdl/SymmetryManager.h"
+
+#include "vm/mat.h"
+#include <vector>
+
+namespace
+{
+
+void translateNodes(const std::vector<tb::mdl::Node*>& nodes, const tb::vm::vec3d& delta)
+{
+    using namespace tb::mdl;
+    for (auto* node : nodes)
+    {
+        if (auto* brushNode = dynamic_cast<BrushNode*>(node))
+        {
+             auto brush = brushNode->brush();
+             brush.translate(delta);
+             brushNode->setBrush(std::move(brush));
+        }
+    }
+}
+
+std::vector<tb::mdl::Node*> findSymmetricNodes(tb::mdl::Map& map, const tb::mdl::SymmetryManager& sm)
+{
+    using namespace tb::mdl;
+    std::vector<Node*> result;
+    const auto& selection = map.selection();
+    
+    // Naive search: iterate all nodes in map.
+    auto allNodes = map.findNodes<Node>("*");
+    
+    for (auto* selectedNode : selection.nodes())
+    {
+        tb::vm::vec3d center = selectedNode->logicalBounds().center();
+        tb::vm::vec3d target = sm.reflect(center);
+        
+        for (auto* candidate : allNodes)
+        {
+            if (candidate == selectedNode) continue;
+            if (selection.contains(candidate)) continue;
+            
+            if (tb::vm::distance(candidate->logicalBounds().center(), target) < 2.0)
+            {
+                result.push_back(candidate);
+                break; 
+            }
+        }
+    }
+    return result;
+}
+
+}
+
+
 #include "mdl/Grid.h"
 #include "mdl/Map.h"
 #include "mdl/Map_Geometry.h"
@@ -49,9 +104,16 @@ bool MoveObjectsTool::startMove(const InputState& inputState)
 {
   auto& map = m_document.map();
 
+  m_symmetricNodes.clear(); 
+
   if (!map.selection().brushFaces.empty())
   {
     return false;
+  }
+
+  if (m_document.symmetryManager().isEnabled())
+  {
+      m_symmetricNodes = findSymmetricNodes(map, m_document.symmetryManager());
   }
 
   map.startTransaction(
@@ -82,6 +144,12 @@ MoveObjectsTool::MoveResult MoveObjectsTool::move(
   {
     m_duplicateObjects = false;
     duplicateSelectedNodes(map);
+  }
+
+  if (!m_symmetricNodes.empty())
+  {
+      vm::vec3d reflectedDelta = m_document.symmetryManager().reflectVector(delta);
+      translateNodes(m_symmetricNodes, reflectedDelta);
   }
 
   return translateSelection(map, delta) ? MoveResult::Continue : MoveResult::Deny;

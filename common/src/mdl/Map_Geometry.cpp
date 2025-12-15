@@ -911,4 +911,92 @@ bool extrudeBrushes(
       [](BezierPatch&) { return true; }));
 }
 
+bool repairConvexity(Map& map)
+{
+    const auto brushNodes = map.selection().brushes;
+    if (brushNodes.empty())
+    {
+        return false;
+    }
+
+    auto toAdd = std::map<Node*, std::vector<Node*>>{};
+    auto toRemove = std::vector<Node*>{};
+    bool anyRepaired = false;
+
+    for (auto* brushNode : brushNodes)
+    {
+        // 1. Collect points
+        std::vector<vm::vec3d> points;
+        for (const auto* vertex : brushNode->brush().vertices())
+        {
+            points.push_back(vertex->position());
+        }
+
+        if (points.size() < 4) continue;
+
+        // 2. Compute Convex Hull
+        // Using BrushGeometry (Polyhedron) constructor which computes convex hull from points
+        auto hull = BrushGeometry(points);
+
+        if (!hull.polyhedron() || !hull.closed())
+        {
+            // Hull computation failed or result is not a closed volume
+            continue;
+        }
+
+        // 3. Create BrushFaces from Hull Faces
+
+        const auto& originalFaces = brushNode->brush().faces();
+        // Use fit attributes from the first face of original brush as broad default
+        const auto& defaultAttrs = originalFaces.empty() ? 
+            map.gameInfo().gameConfig.faceAttribsConfig.defaults : originalFaces.front().attributes();
+        
+        // Better: Try to match face normals to original to preserve textures? 
+        // For simplicity: Use default mapping + original material if possible.
+        std::string materialName = map.currentMaterialName();
+        if (!originalFaces.empty())
+        {
+            if (const auto* mat = originalFaces.front().material())
+                materialName = mat->name();
+        }
+
+
+
+        // 4. Create Brush
+        // Actually, let's use BrushBuilder as seen in csgConvexMerge, it's safer.
+        
+        const auto builder = BrushBuilder{
+            map.worldNode().mapFormat(),
+            map.worldBounds(),
+            defaultAttrs
+        };
+        
+        auto createRes = builder.createBrush(hull, materialName); 
+        // BrushBuilder::createBrush(Polyhedron, material) is exactly what we need!
+        
+        if (createRes)
+        {
+             Brush newBrush = std::move(createRes.value());
+             
+             // Preserve original texture alignment where possible?
+             // csgConvexMerge copies from selection. We can try cloneFaceAttributesFrom.
+             newBrush.cloneFaceAttributesFrom(brushNode->brush());
+
+             toAdd[brushNode->parent()].push_back(new BrushNode{std::move(newBrush)});
+             toRemove.push_back(brushNode);
+             anyRepaired = true;
+        }
+    }
+
+    if (!anyRepaired) return false;
+
+    auto transaction = Transaction{map, "Repair Convexity"};
+    deselectAll(map);
+    const auto added = addNodes(map, toAdd);
+    removeNodes(map, toRemove);
+    selectNodes(map, added);
+
+    return transaction.commit();
+}
+
 } // namespace tb::mdl

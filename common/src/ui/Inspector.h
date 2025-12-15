@@ -25,6 +25,7 @@ namespace tb::ui
 {
 class FaceInspector;
 class EntityInspector;
+class TransformInspector;
 class GLContextManager;
 class MapDocument;
 class MapInspector;
@@ -47,6 +48,7 @@ private:
   MapInspector* m_mapInspector = nullptr;
   EntityInspector* m_entityInspector = nullptr;
   FaceInspector* m_faceInspector = nullptr;
+  TransformInspector* m_transformInspector = nullptr;
 
   SyncHeightEventFilter* m_syncTabBarEventFilter = nullptr;
 

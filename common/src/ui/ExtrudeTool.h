@@ -83,9 +83,16 @@ struct ExtrudeDragState
   bool splitBrushes = false;
   /** The total drag distance so far. */
   vm::vec3d totalDelta = {0, 0, 0};
+  /** The world position where the drag started (for Inset scaling). */
+  vm::vec3d initialClickPoint = {0, 0, 0};
 
   kdl_reflect_decl(
-    ExtrudeDragState, initialDragHandles, currentDragFaces, splitBrushes, totalDelta);
+    ExtrudeDragState,
+    initialDragHandles,
+    currentDragFaces,
+    splitBrushes,
+    totalDelta,
+    initialClickPoint);
 };
 
 struct ExtrudeHitData
@@ -151,6 +158,9 @@ public:
 
   void beginMove();
   bool move(const vm::vec3d& delta, ExtrudeDragState& dragState);
+
+  void beginInset();
+  bool inset(const vm::vec3d& delta, ExtrudeDragState& dragState);
 
   void commit(const ExtrudeDragState& dragState);
   void cancel();

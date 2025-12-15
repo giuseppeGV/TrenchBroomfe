@@ -24,6 +24,8 @@
 #include "mdl/PointTrace.h"
 #include "ui/Actions.h"
 
+#include "mdl/SymmetryManager.h"
+
 #include "vm/bbox.h"
 #include "vm/polygon.h"
 
@@ -160,6 +162,11 @@ private:
   std::unique_ptr<render::MapRenderer> m_mapRenderer;
 
   NotifierConnection m_notifierConnection;
+  
+  mdl::SymmetryManager m_symmetryManager;
+
+public:
+  Notifier<> symmetryDidChangeNotifier;
 
 public:
   explicit MapDocument(kdl::task_manager& taskManager);
@@ -267,6 +274,10 @@ private: // observers
   void documentWasLoaded();
   void documentWasCleared();
   void entityDefinitionsDidChange();
+
+public:
+  mdl::SymmetryManager& symmetryManager() { return m_symmetryManager; }
+  const mdl::SymmetryManager& symmetryManager() const { return m_symmetryManager; }
 };
 
 } // namespace ui

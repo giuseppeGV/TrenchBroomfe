@@ -29,6 +29,7 @@
 #include "ui/MapInspector.h"
 #include "ui/MapViewBar.h"
 #include "ui/QtUtils.h"
+#include "ui/TransformInspector.h"
 #include "ui/TabBar.h"
 #include "ui/TabBook.h"
 
@@ -44,10 +45,12 @@ Inspector::Inspector(
   m_mapInspector = new MapInspector{document};
   m_entityInspector = new EntityInspector{document, contextManager};
   m_faceInspector = new FaceInspector{document, contextManager};
+  m_transformInspector = new TransformInspector{document};
 
   m_tabBook->addPage(m_mapInspector, "Map");
   m_tabBook->addPage(m_entityInspector, "Entity");
   m_tabBook->addPage(m_faceInspector, "Face");
+  m_tabBook->addPage(m_transformInspector, "Transform");
 
   auto* layout = new QVBoxLayout{};
   layout->setContentsMargins(0, 0, 0, 0);

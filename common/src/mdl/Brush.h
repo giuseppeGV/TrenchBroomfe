@@ -200,6 +200,12 @@ public:
     const vm::mat4x4d& transform,
     bool uvLock = false);
 
+  Result<void> bevelEdge(
+    const vm::bbox3d& worldBounds,
+    const vm::segment3d& edge,
+    double distance,
+    bool lockMaterial);
+
   // face operations
   bool canTransformFaces(
     const vm::bbox3d& worldBounds,

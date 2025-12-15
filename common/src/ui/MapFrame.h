@@ -310,6 +310,10 @@ public:
   bool canToggleFaceTool() const;
   bool faceToolActive() const;
 
+  void toggleRandomizeTool();
+  bool canToggleRandomizeTool() const;
+  bool randomizeToolActive() const;
+
   void csgConvexMerge();
   bool canDoCsgConvexMerge() const;
 
@@ -325,6 +329,13 @@ public:
   void snapVerticesToInteger();
   void snapVerticesToGrid();
   bool canSnapVertices() const;
+
+  void searchByTexture();
+  bool canSearchByTexture() const;
+
+  void toggleLighting();
+  bool canToggleLighting() const;
+  bool isLightingEnabled() const;
 
   void replaceMaterial();
 

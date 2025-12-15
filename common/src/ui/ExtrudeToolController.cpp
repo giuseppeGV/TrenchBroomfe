@@ -385,6 +385,94 @@ auto createMoveDragTracker(
     initialHandlePosition,
     hit.hitPoint());
 }
+struct InsetDragDelegate : public HandleDragTrackerDelegate
+{
+  ExtrudeTool& m_tool;
+  ExtrudeDragState m_insetDragState;
+
+  InsetDragDelegate(ExtrudeTool& tool, ExtrudeDragState insetDragState)
+    : m_tool{tool}
+    , m_insetDragState{std::move(insetDragState)}
+  {
+  }
+
+  HandlePositionProposer start(
+    const InputState& inputState,
+    const vm::vec3d& initialHandlePosition,
+    const vm::vec3d& handleOffset) override
+  {
+    // For Inset (Scaling), we want free movement on a plane facing the camera, 
+    // similar to Move. We track the pointer position.
+    
+    auto picker = makePlaneHandlePicker(
+      vm::plane3d{initialHandlePosition, vm::vec3d{inputState.camera().direction()}},
+      handleOffset);
+
+    // No snapping for now, or just regular grid snapping?
+    // Scale is continuous usually. Let's start without snap.
+    
+    return makeHandlePositionProposer(std::move(picker), makeIdentityHandleSnapper());
+  }
+
+  DragStatus update(
+    const InputState&,
+    const DragState& dragState,
+    const vm::vec3d& proposedHandlePosition) override
+  {
+    const auto delta = proposedHandlePosition - dragState.initialHandlePosition;
+    if (m_tool.inset(delta, m_insetDragState))
+    {
+      return DragStatus::Continue;
+    }
+    return DragStatus::Deny;
+  }
+
+  void end(const InputState& inputState, const DragState&) override
+  {
+    m_tool.commit(m_insetDragState);
+    m_tool.updateProposedDragHandles(inputState.pickResult());
+  }
+
+  void cancel(const DragState&) override { m_tool.cancel(); }
+
+  void setRenderOptions(
+    const InputState&, render::RenderContext& renderContext) const override
+  {
+    renderContext.setForceShowSelectionGuide();
+  }
+
+  void render(
+    const InputState&,
+    const DragState&,
+    render::RenderContext&,
+    render::RenderBatch& renderBatch) const override
+  {
+    auto edgeRenderer = buildEdgeRenderer(m_insetDragState.currentDragFaces);
+    edgeRenderer.renderOnTop(renderBatch, pref(Preferences::ExtrudeHandleColor));
+  }
+};
+
+auto createInsetDragTracker(
+  ExtrudeTool& tool, const InputState& inputState, const mdl::Hit& hit)
+{
+  const auto initialHandlePosition = hit.target<ExtrudeHitData>().initialHandlePosition;
+  
+  // Initialize Drag State
+  auto dragState = ExtrudeDragState{
+      tool.proposedDragHandles(),
+      ExtrudeTool::getDragFaces(tool.proposedDragHandles()),
+      false, // split? No
+      {0,0,0}, // delta
+      hit.hitPoint() // initialClickPoint
+  };
+
+  return createHandleDragTracker(
+    InsetDragDelegate{tool, std::move(dragState)},
+    inputState,
+    initialHandlePosition,
+    hit.hitPoint());
+}
+
 } // namespace
 
 std::unique_ptr<GestureTracker> ExtrudeToolController::acceptMouseDrag(
@@ -414,6 +502,14 @@ std::unique_ptr<GestureTracker> ExtrudeToolController::acceptMouseDrag(
       {
         m_tool.beginMove();
         return createMoveDragTracker(m_tool, inputState, hit);
+      }
+      else
+      {
+          // In 3D: Shift+Alt = Inset
+          // We know Shift is pressed because handleInput checks it (in 3D controller).
+          // And we checked Alt here.
+          m_tool.beginInset();
+          return createInsetDragTracker(m_tool, inputState, hit);
       }
     }
     else
@@ -480,9 +576,11 @@ mdl::Hit ExtrudeToolController3D::doPick(
 
 bool ExtrudeToolController3D::doHandleInput(const InputState& inputState) const
 {
+  // Allow Alt modifier for Inset in 3D
   return (
     inputState.modifierKeysPressed(ModifierKeys::Shift)
-    || inputState.modifierKeysPressed(ModifierKeys::Shift | ModifierKeys::CtrlCmd));
+    || inputState.modifierKeysPressed(ModifierKeys::Shift | ModifierKeys::CtrlCmd)
+    || inputState.modifierKeysPressed(ModifierKeys::Shift | ModifierKeys::Alt));
 }
 
 } // namespace tb::ui

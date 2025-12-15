@@ -28,6 +28,7 @@
 #include "mdl/Hit.h"
 #include "mdl/HitAdapter.h"
 #include "mdl/HitFilter.h"
+#include "mdl/Map_Picking.h"
 #include "mdl/PickResult.h"
 #include "mdl/Polyhedron.h"
 #include "render/Camera.h"
@@ -152,7 +153,7 @@ public:
       makePlaneHandlePicker(
         vm::plane3d{initialHandlePosition, vm::vec3d{inputState.camera().direction()}},
         handleOffset),
-      makeAbsoluteHandleSnapper(m_tool.grid()));
+      makeSmartSnapper(m_tool));
   }
 
   std::vector<vm::vec3d> getHelpVectors(
@@ -247,7 +248,74 @@ std::vector<vm::vec3d> selectHelpVectors(
   return kdl::vec_sort_and_remove_duplicates(std::move(result));
 }
 
+  return kdl::vec_sort_and_remove_duplicates(std::move(result));
+}
+
+DragHandleSnapper makeSmartSnapper(const ClipTool& tool)
+{
+  return [&tool](
+           const InputState& inputState,
+           const DragState&,
+           const vm::vec3d& proposedHandlePosition) -> std::optional<vm::vec3d> {
+    const auto& map = tool.document().map();
+    auto pickResult = mdl::PickResult::byDistance();
+    mdl::pick(map, inputState.pickRay(), pickResult);
+
+    using namespace mdl::HitFilters;
+    const auto& hit = pickResult.first(type(mdl::BrushNode::BrushHitType));
+    
+    if (hit.isMatch())
+    {
+      if (const auto faceHandle = mdl::hitToFaceHandle(hit))
+      {
+         const auto& face = faceHandle->face();
+         // Snap to vertices
+         const double snapDist = 4.0; // World units tolerance
+         
+         const mdl::BrushVertex* bestV = nullptr;
+         double minVDist = snapDist;
+         
+         for (const auto* v : face.vertices())
+         {
+             double d = vm::distance(inputState.pickRay(), v->position());
+             if (d < minVDist)
+             {
+                 minVDist = d;
+                 bestV = v;
+             }
+         }
+         
+         if (bestV) return bestV->position();
+         
+         // Snap to edges
+         const mdl::BrushEdge* bestE = nullptr;
+         double minEDist = snapDist;
+         vm::vec3d bestEPos;
+         
+         for (const auto* e : face.edges())
+         {
+             auto res = vm::distance(e->segment(), inputState.pickRay());
+             // res.distance is geometric distance between segment and ray (skew lines)
+             if (res.distance < minEDist)
+             {
+                 minEDist = res.distance;
+                 bestE = e;
+                 // Closest point on segment
+                 bestEPos = e->segment().start + e->segment().vector() * res.position1;
+             }
+         }
+         
+         if (bestE) return bestEPos;
+      }
+    }
+
+    // Default to grid
+    return tool.grid().snap(proposedHandlePosition);
+  };
+}
+
 class PartDelegate3D : public PartDelegateBase
+
 {
 public:
   explicit PartDelegate3D(ClipTool& tool)

@@ -637,6 +637,87 @@ bool ExtrudeTool::move(const vm::vec3d& delta, ExtrudeDragState& dragState)
       vm::translation_matrix(dragState.totalDelta));
   }
 
+  return true;
+}
+
+void ExtrudeTool::beginInset()
+{
+  contract_pre(!m_dragging);
+
+  m_dragging = true;
+  m_document.map().startTransaction("Inset Faces", mdl::TransactionScope::LongRunning);
+}
+
+bool ExtrudeTool::inset(const vm::vec3d& delta, ExtrudeDragState& dragState)
+{
+  contract_pre(m_dragging);
+
+  auto& map = m_document.map();
+  map.rollbackTransaction();
+
+  // Calculate generic "size" of selection to normalize sensitivity?
+  // Or just use distance from initial click.
+  // Center of scaling: Centroid of all initial faces.
+  // Note: Standard TB scaling usually scales around selection center.
+  
+  const auto polygons = getPolygons(dragState.initialDragHandles);
+  if (polygons.empty())
+  {
+      return false;
+  }
+  
+  auto center = vm::vec3d{0,0,0};
+  double totalArea = 0.0;
+  for (const auto& poly : polygons)
+  {
+      const auto area = poly.area();
+      center += poly.center() * area;
+      totalArea += area;
+  }
+  if (totalArea > vm::Cd::almost_zero())
+      center /= totalArea;
+  else
+      center = polygons[0].center(); // Fallback
+      
+  // Calculate scale factor.
+  // Delta is (CurrentPointer - InitialPointer).
+  // We want to project this delta onto a line to get "magnitude".
+  // Simple approach: Distance from Center.
+  // Initial Dist = dist(InitialClick, Center)
+  // Current Dist = dist(CurrentPointer, Center)
+  // Scale = Current / Initial.
+  
+  const double initialDist = vm::distance(dragState.initialClickPoint, center);
+  const auto currentPos = dragState.initialClickPoint + delta;
+  const double currentDist = vm::distance(currentPos, center);
+  
+  // Guard against zero initial distance (clicking exactly on center)
+  double scale = 1.0;
+  if (initialDist > vm::Cd::almost_zero())
+  {
+      scale = currentDist / initialDist;
+  }
+  
+  // Apply scaling
+  if (transformFaces(
+        map, polygons, vm::scaling_matrix(vm::vec3d{scale, scale, scale}, center)))
+  {
+    dragState.totalDelta = delta;
+  }
+  else
+  {
+    // restore last valid
+    // For scale, we can't easily restore "delta" as scale.
+    // transformFaces restores internally on failure? No.
+    // map.rollbackTransaction() handled above.
+    // If failure, we just don't apply anything (effectively scale 1, or previous valid?).
+    // Actually, we rolled back to START of drag.
+    // So if this fails, we are at "Scale 1".
+    // We can try to re-apply previous successful scale?
+    // But we calculate scale from delta fresh each time.
+    // If current delta fails, we just leave it (Start state).
+  }
+
   dragState.currentDragFaces = getDragFaces(m_proposedDragHandles);
 
   return true;

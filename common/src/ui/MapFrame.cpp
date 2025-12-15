@@ -100,6 +100,10 @@
 #include "ui/SwitchableMapViewContainer.h"
 #include "ui/VertexTool.h"
 #include "ui/ViewUtils.h"
+#include "ui/SearchByTextureDialog.h"
+#include "ui/RandomizeTool.h"
+#include "ui/SearchByTextureDialog.h"
+#include "ui/RandomizeTool.h"
 #include "update/Updater.h"
 
 #include "kd/const_overload.h"
@@ -2534,6 +2538,77 @@ void MapFrame::triggerProcessResources()
   auto& map = m_document->map();
   map.processResourcesAsync(mdl::ProcessContext{
     true, [&](const auto&, const auto& error) { logger().error() << error; }});
+}
+
+void MapFrame::toggleRandomizeTool()
+{
+  m_mapView->mapViewToolBox().toggleRandomizeTool();
+}
+
+bool MapFrame::canToggleRandomizeTool() const
+{
+  return true;
+}
+
+bool MapFrame::randomizeToolActive() const
+{
+  return m_mapView->mapViewToolBox().randomizeToolActive();
+}
+
+void MapFrame::searchByTexture()
+{
+  if (!canSearchByTexture())
+  {
+    return;
+  }
+
+  SearchByTextureDialog dialog(*m_document, this);
+  if (dialog.exec() != QDialog::Accepted)
+  {
+    return;
+  }
+  
+  const auto textureName = dialog.textureName();
+  if (textureName.isEmpty())
+  {
+      return;
+  }
+
+  if (faceToolActive())
+  {
+    mdl::selectBrushFacesWithMaterial(m_document->map(), textureName.toStdString());
+  }
+  else
+  {
+    mdl::selectBrushesWithMaterial(m_document->map(), textureName.toStdString());
+  }
+}
+
+bool MapFrame::canSearchByTexture() const
+{
+  return m_document && m_document->map().selection().hasNodes();
+}
+
+void MapFrame::toggleLighting()
+{
+  if (canToggleLighting())
+  {
+    auto& prefs = PreferenceManager::instance();
+    auto& pref = prefs.dynamicPreference(Preferences::ShadeFaces, true);
+    prefs.set(pref, !prefs.get(pref));
+  }
+}
+
+bool MapFrame::canToggleLighting() const
+{
+  return true;
+}
+
+bool MapFrame::isLightingEnabled() const
+{
+  auto& prefs = PreferenceManager::instance();
+  auto& pref = prefs.dynamicPreference(Preferences::ShadeFaces, true);
+  return prefs.get(pref);
 }
 
 // DebugPaletteWindow

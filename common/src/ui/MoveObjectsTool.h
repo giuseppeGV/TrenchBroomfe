@@ -28,6 +28,7 @@ namespace tb
 namespace mdl
 {
 class Grid;
+class Node;
 } // namespace mdl
 
 namespace ui
@@ -48,6 +49,8 @@ public:
 private:
   MapDocument& m_document;
   bool m_duplicateObjects = false;
+  std::vector<mdl::Node*> m_symmetricNodes;
+
 
 public:
   explicit MoveObjectsTool(MapDocument& document);

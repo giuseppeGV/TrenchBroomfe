@@ -1520,6 +1520,16 @@ void ActionManager::createSelectionMenu()
       return context.hasDocument() && context.frame().canSelect();
     },
   }));
+  selectionMenu.addItem(addAction(Action{
+    "Menu/Edit/Search By Texture",
+    QObject::tr("Search By Texture..."),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().searchByTexture(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canSearchByTexture();
+    },
+  }));
 }
 
 void ActionManager::createGroupsMenu()
@@ -1713,6 +1723,20 @@ void ActionManager::createToolsMenu()
       return context.hasDocument() && context.frame().faceToolActive();
     },
     std::filesystem::path{"FaceTool.svg"},
+  }));
+  toolsMenu.addItem(addAction(Action{
+    "Menu/Edit/Tools/Randomize Tool",
+    QObject::tr("Randomize Tool"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().toggleRandomizeTool(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canToggleRandomizeTool();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().randomizeToolActive();
+    },
+    std::filesystem::path{"RandomizeTool.svg"},
   }));
   toolsMenu.addItem(addAction(Action{
     "Controls/Map view/Deactivate current tool",
@@ -2060,6 +2084,20 @@ void ActionManager::createViewMenu()
     [](const auto& context) { return context.hasDocument(); },
     [](const auto& context) {
       return context.hasDocument() && context.frame().currentViewMaximized();
+    },
+  }));
+  viewMenu.addSeparator();
+  viewMenu.addItem(addAction(Action{
+    "Menu/View/Toggle Lighting",
+    QObject::tr("Toggle Lighting"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().toggleLighting(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canToggleLighting();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().isLightingEnabled();
     },
   }));
   viewMenu.addSeparator();

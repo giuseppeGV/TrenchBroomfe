@@ -76,4 +76,6 @@ bool csgHollow(Map& map);
 bool extrudeBrushes(
   Map& map, const std::vector<vm::polygon3d>& faces, const vm::vec3d& delta);
 
+bool repairConvexity(Map& map);
+
 } // namespace tb::mdl
