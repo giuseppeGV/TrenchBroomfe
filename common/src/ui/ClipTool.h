@@ -90,6 +90,7 @@ public:
   ~ClipTool() override;
 
   const mdl::Grid& grid() const;
+  const MapDocument& document() const;
 
   void toggleSide();
 

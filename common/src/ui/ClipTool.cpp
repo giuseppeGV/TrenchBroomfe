@@ -513,6 +513,11 @@ const mdl::Grid& ClipTool::grid() const
   return m_document.map().grid();
 }
 
+const MapDocument& ClipTool::document() const
+{
+  return m_document;
+}
+
 void ClipTool::toggleSide()
 {
   if (canClip())
