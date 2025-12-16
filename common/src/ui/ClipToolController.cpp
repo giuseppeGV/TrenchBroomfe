@@ -58,7 +58,7 @@ DragHandleSnapper makeSmartSnapper(ClipTool& tool)
            const InputState& inputState,
            const DragState&,
            const vm::vec3d& proposedHandlePosition) -> std::optional<vm::vec3d> {
-    const auto& map = tool.document().map();
+    auto& map = tool.document().map();
     auto pickResult = mdl::PickResult::byDistance();
     mdl::pick(map, inputState.pickRay(), pickResult);
 
