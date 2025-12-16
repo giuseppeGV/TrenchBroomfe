@@ -670,7 +670,17 @@ bool ExtrudeTool::inset(const vm::vec3d& delta, ExtrudeDragState& dragState)
   double totalArea = 0.0;
   for (const auto& poly : polygons)
   {
-      const auto area = poly.area();
+      // Calculate area manually since vm::polygon doesn't have area()
+      double area = 0.0;
+      const auto& verts = poly.vertices();
+      if (verts.size() >= 3)
+      {
+          for (size_t i = 1; i < verts.size() - 1; ++i)
+          {
+              area += 0.5 * vm::length(vm::cross(verts[i] - verts[0], verts[i+1] - verts[0]));
+          }
+      }
+
       center += poly.center() * area;
       totalArea += area;
   }
@@ -699,8 +709,8 @@ bool ExtrudeTool::inset(const vm::vec3d& delta, ExtrudeDragState& dragState)
   }
   
   // Apply scaling
-  if (transformFaces(
-        map, polygons, vm::scaling_matrix(vm::vec3d{scale, scale, scale}, center)))
+  const auto transform = vm::translation_matrix(center) * vm::scaling_matrix(vm::vec3d{scale, scale, scale}) * vm::translation_matrix(-center);
+  if (transformFaces(map, polygons, transform))
   {
     dragState.totalDelta = delta;
   }
