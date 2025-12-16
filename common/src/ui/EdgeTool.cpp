@@ -19,9 +19,13 @@
 
 #include "EdgeTool.h"
 
+#include "mdl/BrushFace.h"
 #include "mdl/Map.h"
 #include "mdl/Map_Geometry.h"
 #include "ui/MapDocument.h"
+
+#include "vm/segment.h"
+#include "vm/vec.h"
 
 #include "kd/contracts.h"
 #include "kd/string_format.h"
@@ -47,7 +51,8 @@ bool EdgeTool::bevelMode() const
 std::vector<mdl::BrushNode*> EdgeTool::findIncidentBrushes(
   const vm::segment3d& handle) const
 {
-  return findIncidentBrushes(handleManager(), handle);
+  const auto brushes = m_document.map().findNodes<mdl::BrushNode>("*");
+  return handleManager().findIncidentBrushes(handle, brushes);
 }
 
 void EdgeTool::pick(
@@ -92,7 +97,8 @@ bool EdgeTool::startMove(const std::vector<mdl::Hit>& hits)
     m_totalDelta = vm::vec3d::zero();
 
     const auto handles = handleManager().selectedHandles();
-    for (auto* brushNode : findIncidentBrushes(handleManager(), handles))
+    const auto brushes = m_document.map().findNodes<mdl::BrushNode>("*");
+    for (auto* brushNode : handleManager().findIncidentBrushes(handles, brushes))
     {
       m_initialBrushes.emplace(brushNode, brushNode->brush());
     }
@@ -107,7 +113,7 @@ EdgeTool::MoveResult EdgeTool::move(const vm::vec3d& delta)
 
   if (m_bevelMode)
   {
-    m_totalDelta += delta;
+    m_totalDelta = m_totalDelta + delta;
     
     // Determine bevel amount (distance).
     // Simple heuristic: length of delta, or project onto some direction.
@@ -218,15 +224,15 @@ namespace
 {
 bool areSegmentsEqual(const vm::segment3d& a, const vm::segment3d& b, double epsilon)
 {
-  return (vm::distance_sq(a.start, b.start) < epsilon * epsilon && vm::distance_sq(a.end, b.end) < epsilon * epsilon)
-         || (vm::distance_sq(a.start, b.end) < epsilon * epsilon && vm::distance_sq(a.end, b.start) < epsilon * epsilon);
+  return (vm::squared_length(a.start() - b.start()) < epsilon * epsilon && vm::squared_length(a.end() - b.end()) < epsilon * epsilon)
+         || (vm::squared_length(a.start() - b.end()) < epsilon * epsilon && vm::squared_length(a.end() - b.start()) < epsilon * epsilon);
 }
 }
 
 void EdgeTool::selectFaceLoop(const vm::segment3d& edge)
 {
   auto brushes = findIncidentBrushes(edge);
-  auto selection = handleManager().selection();
+  auto handlesToSelect = std::vector<vm::segment3d>{};
 
   for (auto* brushNode : brushes)
   {
@@ -250,12 +256,12 @@ void EdgeTool::selectFaceLoop(const vm::segment3d& edge)
         // Select all edges of this face
         for (const auto* faceEdge : face.edges())
         {
-          selection.insert(faceEdge->segment());
+          handlesToSelect.push_back(faceEdge->segment());
         }
       }
     }
   }
-  handleManager().setSelection(selection);
+  handleManager().select(handlesToSelect);
 }
 
 } // namespace tb::ui

@@ -80,8 +80,6 @@ public:
 
   std::string actionName() const override;
 
-  std::string actionName() const override;
-
   void removeSelection();
   void selectFaceLoop(const vm::segment3d& edge);
 
