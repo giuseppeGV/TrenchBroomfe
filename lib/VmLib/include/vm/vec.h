@@ -64,6 +64,42 @@ public:
   vec<T, S>& operator=(const vec<T, S>& other) = default;
   vec<T, S>& operator=(vec<T, S>&& other) noexcept = default;
 
+  constexpr vec<T, S>& operator+=(const vec<T, S>& other)
+  {
+    for (std::size_t i = 0u; i < S; ++i)
+    {
+      v[i] += other.v[i];
+    }
+    return *this;
+  }
+
+  constexpr vec<T, S>& operator-=(const vec<T, S>& other)
+  {
+    for (std::size_t i = 0u; i < S; ++i)
+    {
+      v[i] -= other.v[i];
+    }
+    return *this;
+  }
+
+  constexpr vec<T, S>& operator*=(const T factor)
+  {
+    for (std::size_t i = 0u; i < S; ++i)
+    {
+      v[i] *= factor;
+    }
+    return *this;
+  }
+
+  constexpr vec<T, S>& operator/=(const T factor)
+  {
+    for (std::size_t i = 0u; i < S; ++i)
+    {
+      v[i] /= factor;
+    }
+    return *this;
+  }
+
   /**
    * Creates a new vector from the values in the given initializer list. If the given list
    * has fewer elements than the size of this vector, then the remaining components are
