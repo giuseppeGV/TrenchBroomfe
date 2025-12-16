@@ -161,7 +161,7 @@ EdgeTool::MoveResult EdgeTool::move(const vm::vec3d& delta)
            {
                // Try to bevel
                // We ignore error if edge not found (might have been consumed by previous bevel?)
-               brush.bevelEdge(map.worldNode().mapFormat(), map.worldBounds(), edgeHandle, distance, false);
+                (void)brush.bevelEdge(map.worldNode().mapFormat(), map.worldBounds(), edgeHandle, distance, false);
            }
        }
        

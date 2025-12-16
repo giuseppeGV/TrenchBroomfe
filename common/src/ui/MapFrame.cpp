@@ -102,8 +102,6 @@
 #include "ui/ViewUtils.h"
 #include "ui/SearchByTextureDialog.h"
 #include "ui/RandomizeTool.h"
-#include "ui/SearchByTextureDialog.h"
-#include "ui/RandomizeTool.h"
 #include "update/Updater.h"
 
 #include "kd/const_overload.h"
