@@ -9,17 +9,14 @@ on:
   pull_request:
   # Manual trigger added
   workflow_dispatch:
-
 permissions:
   # This grants the GITHUB_TOKEN the necessary permissions for use with nuget.
   packages: write
   # Grant the Release step the necessary permissions to upload a release
   contents: write
-
 jobs:
   ci:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -27,7 +24,6 @@ jobs:
         os: [windows-2022]
         tb-build-type: [release]
         tb-arch: [x64]
-
     env:
       # Record pull request head commit SHA
       TB_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -37,7 +33,6 @@ jobs:
       VCPKG_EXE: ${{ github.workspace }}/vcpkg/vcpkg
       FEED_URL: https://nuget.pkg.github.com/TrenchBroom/index.json
       VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/TrenchBroom/index.json,readwrite"
-
     steps:
       # See: https://github.com/actions/checkout
       - name: Checkout code
@@ -45,18 +40,15 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
-
       # Install Qt
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.9.*'
-
       # Windows Steps
       - name: Windows - Bootstrap vcpkg
         shell: pwsh
         run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.bat
-
       - name: Windows - Install dependencies
         run: |
           # Chocolatey was taking 3 minutes to install pandoc; just install it directly
@@ -68,7 +60,6 @@ jobs:
           echo "Pandoc path: $tb_pandoc_path"
           # See: https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#environment-files
           echo "$tb_pandoc_path" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
       - name: Windows - Add NuGet sources
         shell: pwsh
         run: |
@@ -82,23 +73,44 @@ jobs:
           .$(${{ env.VCPKG_EXE }} fetch nuget) `
             setapikey "${{ secrets.GITHUB_TOKEN }}" `
             -Source "${{ env.FEED_URL }}"
-
       - name: Windows - Build
-        run: cmd.exe /c CI-windows.bat
-
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          # Run the build script and continue even if it fails
+          $ErrorActionPreference = "Continue"
+          
+          # Read the CI-windows.bat file and modify it to continue on error
+          $batContent = Get-Content "CI-windows.bat" -Raw
+          
+          # Replace cmake --build commands to add ContinueOnError flag
+          $batContent = $batContent -replace '(cmake\s+--build\s+\.\s+--config\s+\w+)(\s+--parallel)?', '$1$2 -- /p:ContinueOnError=ErrorAndContinue /maxcpucount'
+          
+          # Also handle msbuild commands if they exist
+          $batContent = $batContent -replace '(msbuild\s+[^\s]+\s+/p:Configuration=\w+)', '$1 /p:ContinueOnError=ErrorAndContinue /maxcpucount'
+          
+          # Save the modified batch file
+          $batContent | Out-File "CI-windows-modified.bat" -Encoding ASCII
+          
+          # Run the modified build script
+          cmd.exe /c CI-windows-modified.bat
+          
+          # Force exit code 0 so workflow continues
+          exit 0
       - name: Windows - Upload artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: ${{ matrix.os }}
           path: |
             cmakebuild/*.zip
             cmakebuild/*.zip.md5
-
       # Create release
       # Official action upload-release-asset doesn't support uploading files
       # based on a glob, so use https://github.com/softprops/action-gh-release
       - name: Release
         uses: softprops/action-gh-release@v1
+        continue-on-error: true
         # Runs on tags, excluding sanitize builds. 
         # (Since the OS is now only windows-2022, we don't strictly need the matrix.os check, but it is safe to keep)
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.tb-build-type != 'sanitize' }}

@@ -52,7 +52,7 @@ namespace tb::ui
 namespace
 {
 
-DragHandleSnapper makeSmartSnapper(const ClipTool& tool)
+DragHandleSnapper makeSmartSnapper(ClipTool& tool)
 {
   return [&tool](
            const InputState& inputState,

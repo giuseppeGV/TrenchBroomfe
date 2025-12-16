@@ -91,6 +91,7 @@ public:
 
   const mdl::Grid& grid() const;
   const MapDocument& document() const;
+  MapDocument& document();
 
   void toggleSide();
 

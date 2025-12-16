@@ -518,6 +518,11 @@ const MapDocument& ClipTool::document() const
   return m_document;
 }
 
+MapDocument& ClipTool::document()
+{
+  return m_document;
+}
+
 void ClipTool::toggleSide()
 {
   if (canClip())
