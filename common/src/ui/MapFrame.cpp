@@ -2591,9 +2591,7 @@ void MapFrame::toggleLighting()
 {
   if (canToggleLighting())
   {
-    auto& prefs = PreferenceManager::instance();
-    auto& pref = prefs.dynamicPreference(Preferences::ShadeFaces, true);
-    prefs.set(pref, !prefs.get(pref));
+    togglePref(Preferences::ShadeFaces);
   }
 }
 
@@ -2604,9 +2602,7 @@ bool MapFrame::canToggleLighting() const
 
 bool MapFrame::isLightingEnabled() const
 {
-  auto& prefs = PreferenceManager::instance();
-  auto& pref = prefs.dynamicPreference(Preferences::ShadeFaces, true);
-  return prefs.get(pref);
+  return pref(Preferences::ShadeFaces);
 }
 
 // DebugPaletteWindow
