@@ -34,10 +34,19 @@
 #include "render/Camera.h"
 #include "render/RenderContext.h"
 #include "ui/ClipTool.h"
+#include "ui/HandleDragTracker.h"
 #include "ui/MapDocument.h"
 
-// ... (other includes)
+#include "kd/contracts.h"
+#include "kd/optional_utils.h"
+#include "kd/vector_utils.h"
 
+#include "vm/distance.h"
+#include "vm/intersection.h"
+#include "vm/vec.h"
+
+#include <memory>
+#include <optional>
 namespace tb::ui
 {
 namespace
