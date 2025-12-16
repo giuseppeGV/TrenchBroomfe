@@ -74,32 +74,9 @@ jobs:
             setapikey "${{ secrets.GITHUB_TOKEN }}" `
             -Source "${{ env.FEED_URL }}"
       - name: Windows - Build
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          # Run the build script and continue even if it fails
-          $ErrorActionPreference = "Continue"
-          
-          # Read the CI-windows.bat file and modify it to continue on error
-          $batContent = Get-Content "CI-windows.bat" -Raw
-          
-          # Replace cmake --build commands to add ContinueOnError flag
-          $batContent = $batContent -replace '(cmake\s+--build\s+\.\s+--config\s+\w+)(\s+--parallel)?', '$1$2 -- /p:ContinueOnError=ErrorAndContinue /maxcpucount'
-          
-          # Also handle msbuild commands if they exist
-          $batContent = $batContent -replace '(msbuild\s+[^\s]+\s+/p:Configuration=\w+)', '$1 /p:ContinueOnError=ErrorAndContinue /maxcpucount'
-          
-          # Save the modified batch file
-          $batContent | Out-File "CI-windows-modified.bat" -Encoding ASCII
-          
-          # Run the modified build script
-          cmd.exe /c CI-windows-modified.bat
-          
-          # Force exit code 0 so workflow continues
-          exit 0
+        run: cmd.exe /c CI-windows.bat
       - name: Windows - Upload artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: ${{ matrix.os }}
           path: |
@@ -110,7 +87,6 @@ jobs:
       # based on a glob, so use https://github.com/softprops/action-gh-release
       - name: Release
         uses: softprops/action-gh-release@v1
-        continue-on-error: true
         # Runs on tags, excluding sanitize builds. 
         # (Since the OS is now only windows-2022, we don't strictly need the matrix.os check, but it is safe to keep)
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.tb-build-type != 'sanitize' }}
