@@ -70,7 +70,7 @@ void TerrainTool::generate(const vm::bbox3d& bounds, int rows, int cols, float c
     map.commitTransaction();
 }
 
-void TerrainTool::sculpt(const InputState& inputState, bool invert)
+void TerrainTool::sculpt(const InputState& inputState, bool /*invert*/)
 {
     auto& map = m_document.map();
     

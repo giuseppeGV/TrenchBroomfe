@@ -39,6 +39,7 @@
 #include "mdl/Map_Groups.h"
 #include "mdl/Map_Nodes.h"
 #include "mdl/Map_Selection.h"
+#include "mdl/Material.h"
 #include "mdl/ModelUtils.h"
 #include "mdl/Node.h"
 #include "mdl/PatchNode.h"
@@ -971,7 +972,7 @@ bool repairConvexity(Map& map)
             defaultAttrs
         };
         
-        auto createRes = builder.createBrush(hull, materialName); 
+        auto createRes = builder.createBrush(points, materialName); 
         // BrushBuilder::createBrush(Polyhedron, material) is exactly what we need!
         
         if (createRes)

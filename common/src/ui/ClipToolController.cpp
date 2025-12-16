@@ -248,8 +248,7 @@ std::vector<vm::vec3d> selectHelpVectors(
   return kdl::vec_sort_and_remove_duplicates(std::move(result));
 }
 
-  return kdl::vec_sort_and_remove_duplicates(std::move(result));
-}
+
 
 DragHandleSnapper makeSmartSnapper(const ClipTool& tool)
 {
