@@ -786,7 +786,7 @@ Result<void> Brush::bevelEdge(
   const vm::bbox3d& worldBounds,
   const vm::segment3d& edge,
   const double distance,
-  const bool lockMaterial)
+  const bool /*lockMaterial*/)
 {
   contract_pre(m_geometry != nullptr);
 
