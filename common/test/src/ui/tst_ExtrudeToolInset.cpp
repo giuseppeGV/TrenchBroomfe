@@ -18,6 +18,7 @@
 
 #include "kd/result.h"
 #include "vm/vec.h"
+#include "vm/bbox.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -97,7 +98,7 @@ TEST_CASE("ExtrudeTool Inset")
       
       // Check vertices of the polygon
       const auto poly = topFace.polygon();
-      const auto bbox = poly.boundingBox();
+      const auto bbox = vm::bbox3d::merge_all(poly.vertices().begin(), poly.vertices().end());
       
       // Approx check
       CHECK(bbox.min.x() == Catch::Approx(-8.0).margin(0.1));
@@ -125,7 +126,7 @@ TEST_CASE("ExtrudeTool Inset")
       const auto& topFace = brush.face(*topFaceIndex);
       
       const auto poly = topFace.polygon();
-      const auto bbox = poly.boundingBox();
+      const auto bbox = vm::bbox3d::merge_all(poly.vertices().begin(), poly.vertices().end());
       
       CHECK(bbox.min.x() == Catch::Approx(-24.0).margin(0.1));
       CHECK(bbox.max.x() == Catch::Approx(24.0).margin(0.1));
