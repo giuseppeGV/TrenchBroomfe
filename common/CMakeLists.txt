@@ -182,6 +182,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/mdl/SoftMapBounds.cpp
         ${COMMON_SOURCE_DIR}/mdl/SoftMapBoundsValidator.cpp
         ${COMMON_SOURCE_DIR}/mdl/SwapNodeContentsCommand.cpp
+        ${COMMON_SOURCE_DIR}/mdl/SymmetryManager.cpp
         ${COMMON_SOURCE_DIR}/mdl/Tag.cpp
         ${COMMON_SOURCE_DIR}/mdl/TagAttribute.cpp
         ${COMMON_SOURCE_DIR}/mdl/TagManager.cpp
@@ -414,6 +415,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/ui/PreferenceDialog.cpp
         ${COMMON_SOURCE_DIR}/ui/PreferencePane.cpp
         ${COMMON_SOURCE_DIR}/ui/QtUtils.cpp
+        ${COMMON_SOURCE_DIR}/ui/RandomizeTool.cpp
         ${COMMON_SOURCE_DIR}/ui/RecentDocumentListBox.cpp
         ${COMMON_SOURCE_DIR}/ui/RecentDocuments.cpp
         ${COMMON_SOURCE_DIR}/ui/RenderView.cpp
@@ -425,6 +427,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/ui/ScaleTool.cpp
         ${COMMON_SOURCE_DIR}/ui/ScaleToolController.cpp
         ${COMMON_SOURCE_DIR}/ui/ScaleToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/SearchByTextureDialog.cpp
         ${COMMON_SOURCE_DIR}/ui/SelectionTool.cpp
         ${COMMON_SOURCE_DIR}/ui/SetBrushFaceAttributesTool.cpp
         ${COMMON_SOURCE_DIR}/ui/ShearTool.cpp
@@ -453,6 +456,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/ui/ToolBoxConnector.cpp
         ${COMMON_SOURCE_DIR}/ui/ToolChain.cpp
         ${COMMON_SOURCE_DIR}/ui/ToolController.cpp
+        ${COMMON_SOURCE_DIR}/ui/TransformInspector.cpp
         ${COMMON_SOURCE_DIR}/ui/TwoPaneMapView.cpp
         ${COMMON_SOURCE_DIR}/ui/UpdateConfig.cpp
         ${COMMON_SOURCE_DIR}/ui/UpdatePreferencePane.cpp
@@ -686,6 +690,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/mdl/SoftMapBounds.h
         ${COMMON_SOURCE_DIR}/mdl/SoftMapBoundsValidator.h
         ${COMMON_SOURCE_DIR}/mdl/SwapNodeContentsCommand.h
+        ${COMMON_SOURCE_DIR}/mdl/SymmetryManager.h
         ${COMMON_SOURCE_DIR}/mdl/Tag.h
         ${COMMON_SOURCE_DIR}/mdl/TagAttribute.h
         ${COMMON_SOURCE_DIR}/mdl/TagManager.h
@@ -930,6 +935,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/ui/PreferenceDialog.h
         ${COMMON_SOURCE_DIR}/ui/PreferencePane.h
         ${COMMON_SOURCE_DIR}/ui/QtUtils.h
+        ${COMMON_SOURCE_DIR}/ui/RandomizeTool.h
         ${COMMON_SOURCE_DIR}/ui/RecentDocumentListBox.h
         ${COMMON_SOURCE_DIR}/ui/RecentDocuments.h
         ${COMMON_SOURCE_DIR}/ui/RenderView.h
@@ -941,6 +947,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/ui/ScaleTool.h
         ${COMMON_SOURCE_DIR}/ui/ScaleToolController.h
         ${COMMON_SOURCE_DIR}/ui/ScaleToolPage.h
+        ${COMMON_SOURCE_DIR}/ui/SearchByTextureDialog.h
         ${COMMON_SOURCE_DIR}/ui/SelectionTool.h
         ${COMMON_SOURCE_DIR}/ui/SetBrushFaceAttributesTool.h
         ${COMMON_SOURCE_DIR}/ui/ShearTool.h
@@ -969,6 +976,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/ui/ToolBoxConnector.h
         ${COMMON_SOURCE_DIR}/ui/ToolChain.h
         ${COMMON_SOURCE_DIR}/ui/ToolController.h
+        ${COMMON_SOURCE_DIR}/ui/TransformInspector.h
         ${COMMON_SOURCE_DIR}/ui/TwoPaneMapView.h
         ${COMMON_SOURCE_DIR}/ui/UpdateConfig.h
         ${COMMON_SOURCE_DIR}/ui/UpdatePreferencePane.h
