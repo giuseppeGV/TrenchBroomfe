@@ -12,9 +12,9 @@ vm::vec3d SymmetryManager::reflect(const vm::vec3d& point) const
 
     switch (m_axis)
     {
-    case SymmetryAxis::X: reflected.x = -reflected.x; break;
-    case SymmetryAxis::Y: reflected.y = -reflected.y; break;
-    case SymmetryAxis::Z: reflected.z = -reflected.z; break;
+    case SymmetryAxis::X: reflected[0] = -reflected[0]; break;
+    case SymmetryAxis::Y: reflected[1] = -reflected[1]; break;
+    case SymmetryAxis::Z: reflected[2] = -reflected[2]; break;
     case SymmetryAxis::Custom:
         // Not implemented yet
         break;
@@ -31,9 +31,9 @@ vm::vec3d SymmetryManager::reflectVector(const vm::vec3d& vec) const
 
     switch (m_axis)
     {
-    case SymmetryAxis::X: reflected.x = -reflected.x; break;
-    case SymmetryAxis::Y: reflected.y = -reflected.y; break;
-    case SymmetryAxis::Z: reflected.z = -reflected.z; break;
+    case SymmetryAxis::X: reflected[0] = -reflected[0]; break;
+    case SymmetryAxis::Y: reflected[1] = -reflected[1]; break;
+    case SymmetryAxis::Z: reflected[2] = -reflected[2]; break;
     case SymmetryAxis::Custom:
         break;
     }

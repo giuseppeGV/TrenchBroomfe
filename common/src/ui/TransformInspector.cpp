@@ -144,9 +144,9 @@ void TransformInspector::updateUi()
   {
       hasSelection = true;
       const auto center = bounds->center();
-      m_xInput->setValue(center.x);
-      m_yInput->setValue(center.y);
-      m_zInput->setValue(center.z);
+      m_xInput->setValue(center.x());
+      m_yInput->setValue(center.y());
+      m_zInput->setValue(center.z());
       
       m_xInput->setEnabled(true);
       m_yInput->setEnabled(true);

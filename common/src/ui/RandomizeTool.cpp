@@ -130,22 +130,22 @@ void RandomizeTool::applyRandomization(
   for (auto* node : nodesToProcess)
   {
       // Calculate random transformation
-      const auto tx = vm::random(minTranslate.x, maxTranslate.x);
-      const auto ty = vm::random(minTranslate.y, maxTranslate.y);
-      const auto tz = vm::random(minTranslate.z, maxTranslate.z);
+      const auto tx = vm::random(minTranslate.x(), maxTranslate.x());
+      const auto ty = vm::random(minTranslate.y(), maxTranslate.y());
+      const auto tz = vm::random(minTranslate.z(), maxTranslate.z());
       const vm::vec3d translation{tx, ty, tz};
 
-      const auto rx = vm::to_radians(vm::random(minRotate.x, maxRotate.x));
-      const auto ry = vm::to_radians(vm::random(minRotate.y, maxRotate.y));
-      const auto rz = vm::to_radians(vm::random(minRotate.z, maxRotate.z));
+      const auto rx = vm::to_radians(vm::random(minRotate.x(), maxRotate.x()));
+      const auto ry = vm::to_radians(vm::random(minRotate.y(), maxRotate.y()));
+      const auto rz = vm::to_radians(vm::random(minRotate.z(), maxRotate.z()));
       
       const auto rotMat = vm::rotation_matrix(vm::vec3d::unit_z(), rz) *
                           vm::rotation_matrix(vm::vec3d::unit_y(), ry) *
                           vm::rotation_matrix(vm::vec3d::unit_x(), rx);
 
-      const auto sx = vm::random(minScale.x, maxScale.x);
-      const auto sy = vm::random(minScale.y, maxScale.y);
-      const auto sz = vm::random(minScale.z, maxScale.z);
+      const auto sx = vm::random(minScale.x(), maxScale.x());
+      const auto sy = vm::random(minScale.y(), maxScale.y());
+      const auto sz = vm::random(minScale.z(), maxScale.z());
       const vm::vec3d scale{sx, sy, sz};
 
       // Transform around center
