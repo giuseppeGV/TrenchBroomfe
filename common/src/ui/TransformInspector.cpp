@@ -3,6 +3,7 @@
 #include "mdl/Map.h"
 #include "mdl/Map_Geometry.h"
 #include "mdl/SelectionChange.h"
+#include "mdl/TransactionScope.h"
 #include "ui/MapDocument.h"
 #include "ui/QtUtils.h"
 
