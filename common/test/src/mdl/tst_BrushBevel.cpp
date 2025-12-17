@@ -6,6 +6,8 @@
 #include "mdl/BrushFace.h"
 #include "mdl/BrushNode.h"
 
+#include "mdl/MapFormat.h"
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -34,7 +36,7 @@ namespace tb::mdl
             // Bevel distance 8.0
             double bevelDist = 8.0;
             
-            auto result = brush.bevelEdge(worldBounds, targetEdge, bevelDist, false);
+            auto result = brush.bevelEdge(MapFormat::Standard, worldBounds, targetEdge, bevelDist, false);
             REQUIRE(result.is_success());
 
             // Verification
@@ -106,7 +108,7 @@ namespace tb::mdl
             double hugeDist = 50.0; // Cube width 64. Diagonal from center to corner is sqrt(32^2+32^2) = 45.
             // 50 should cross the origin.
             
-            auto result = brush.bevelEdge(worldBounds, targetEdge, hugeDist, false);
+            auto result = brush.bevelEdge(MapFormat::Standard, worldBounds, targetEdge, hugeDist, false);
             // Result should be valid, just weird shape.
             REQUIRE(result.is_success());
             CHECK(brush.vertexCount() > 0);
