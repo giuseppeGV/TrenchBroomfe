@@ -817,14 +817,14 @@ Result<void> Brush::bevelEdge(
   const auto n1 = bFace1.boundary().normal;
   const auto n2 = bFace2.boundary().normal;
 
-  auto nBevel = n1 + n2;
+  auto nBevel = -(n1 + n2);
   if (vm::squared_length(nBevel) < vm::constants<double>::almost_zero())
   {
     return Error{"Cannot bevel edge with opposing normals"};
   }
   nBevel = vm::normalize(nBevel);
 
-  const auto pPlane = edge.start() - nBevel * distance;
+  const auto pPlane = edge.start() + nBevel * distance;
   const vm::plane3d bevelPlane(pPlane, nBevel);
 
   // Construct a valid face from 3 points on the plane
