@@ -24,6 +24,7 @@
 
 #include "vm/mat.h"
 #include "vm/mat_ext.h"
+#include <algorithm>
 #include <vector>
 
 #include "mdl/Grid.h"
@@ -46,7 +47,7 @@ void translateNodes(const std::vector<tb::mdl::Node*>& nodes, const vm::vec3d& d
         if (auto* brushNode = dynamic_cast<BrushNode*>(node))
         {
              auto brush = brushNode->brush();
-             brush.transform(worldBounds, vm::translation_matrix(delta), true);
+             [[maybe_unused]] auto result = brush.transform(worldBounds, vm::translation_matrix(delta), true);
              brushNode->setBrush(std::move(brush));
         }
     }
@@ -61,7 +62,7 @@ std::vector<tb::mdl::Node*> findSymmetricNodes(tb::mdl::Map& map, const tb::mdl:
     // Naive search: iterate all nodes in map.
     auto allNodes = map.findNodes<Node>("*");
     
-    for (auto* selectedNode : selection.nodes())
+    for (auto* selectedNode : selection.nodes)
     {
         vm::vec3d center = selectedNode->logicalBounds().center();
         vm::vec3d target = sm.reflect(center);
@@ -69,7 +70,7 @@ std::vector<tb::mdl::Node*> findSymmetricNodes(tb::mdl::Map& map, const tb::mdl:
         for (auto* candidate : allNodes)
         {
             if (candidate == selectedNode) continue;
-            if (selection.contains(candidate)) continue;
+            if (std::find(selection.nodes.begin(), selection.nodes.end(), candidate) != selection.nodes.end()) continue;
             
             if (vm::length(candidate->logicalBounds().center() - target) < 2.0)
             {
