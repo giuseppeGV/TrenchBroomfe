@@ -16,8 +16,33 @@
 #include "mdl/Selection.h"
 #include "mdl/Transaction.h"
 #include "ui/MapDocument.h"
-#include "vm/random.h"
+#include <random>
 #include "vm/transform.h"
+
+namespace
+{
+std::mt19937& random_engine()
+{
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  return gen;
+}
+
+template <typename T>
+T random_val(T min, T max)
+{
+  if constexpr (std::is_integral_v<T>)
+  {
+    std::uniform_int_distribution<T> dist(min, max);
+    return dist(random_engine());
+  }
+  else
+  {
+    std::uniform_real_distribution<T> dist(min, max);
+    return dist(random_engine());
+  }
+}
+}
 
 #include "kd/overload.h"
 #include "kd/ranges/to.h"
@@ -130,22 +155,22 @@ void RandomizeTool::applyRandomization(
   for (auto* node : nodesToProcess)
   {
       // Calculate random transformation
-      const auto tx = vm::random(minTranslate.x(), maxTranslate.x());
-      const auto ty = vm::random(minTranslate.y(), maxTranslate.y());
-      const auto tz = vm::random(minTranslate.z(), maxTranslate.z());
+      const auto tx = random_val(minTranslate.x(), maxTranslate.x());
+      const auto ty = random_val(minTranslate.y(), maxTranslate.y());
+      const auto tz = random_val(minTranslate.z(), maxTranslate.z());
       const vm::vec3d translation{tx, ty, tz};
 
-      const auto rx = vm::to_radians(vm::random(minRotate.x(), maxRotate.x()));
-      const auto ry = vm::to_radians(vm::random(minRotate.y(), maxRotate.y()));
-      const auto rz = vm::to_radians(vm::random(minRotate.z(), maxRotate.z()));
+      const auto rx = vm::to_radians(random_val(minRotate.x(), maxRotate.x()));
+      const auto ry = vm::to_radians(random_val(minRotate.y(), maxRotate.y()));
+      const auto rz = vm::to_radians(random_val(minRotate.z(), maxRotate.z()));
       
       const auto rotMat = vm::rotation_matrix(vm::vec3d::unit_z(), rz) *
                           vm::rotation_matrix(vm::vec3d::unit_y(), ry) *
                           vm::rotation_matrix(vm::vec3d::unit_x(), rx);
 
-      const auto sx = vm::random(minScale.x(), maxScale.x());
-      const auto sy = vm::random(minScale.y(), maxScale.y());
-      const auto sz = vm::random(minScale.z(), maxScale.z());
+      const auto sx = random_val(minScale.x(), maxScale.x());
+      const auto sy = random_val(minScale.y(), maxScale.y());
+      const auto sz = random_val(minScale.z(), maxScale.z());
       const vm::vec3d scale{sx, sy, sz};
 
       // Transform around center
