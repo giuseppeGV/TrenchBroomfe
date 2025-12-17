@@ -23,12 +23,22 @@
 #include "mdl/SymmetryManager.h"
 
 #include "vm/mat.h"
+#include "vm/mat_ext.h"
 #include <vector>
+
+#include "mdl/Grid.h"
+#include "mdl/Map.h"
+#include "mdl/Map_Geometry.h"
+#include "mdl/Map_Nodes.h"
+#include "mdl/TransactionScope.h"
+#include "ui/InputState.h"
+#include "ui/MapDocument.h"
+#include "vm/bbox.h"
 
 namespace
 {
 
-void translateNodes(const std::vector<tb::mdl::Node*>& nodes, const tb::vm::vec3d& delta)
+void translateNodes(const std::vector<tb::mdl::Node*>& nodes, const vm::vec3d& delta, const vm::bbox3d& worldBounds)
 {
     using namespace tb::mdl;
     for (auto* node : nodes)
@@ -36,7 +46,7 @@ void translateNodes(const std::vector<tb::mdl::Node*>& nodes, const tb::vm::vec3
         if (auto* brushNode = dynamic_cast<BrushNode*>(node))
         {
              auto brush = brushNode->brush();
-             brush.translate(delta);
+             brush.transform(worldBounds, vm::translation_matrix(delta), true);
              brushNode->setBrush(std::move(brush));
         }
     }
@@ -53,15 +63,15 @@ std::vector<tb::mdl::Node*> findSymmetricNodes(tb::mdl::Map& map, const tb::mdl:
     
     for (auto* selectedNode : selection.nodes())
     {
-        tb::vm::vec3d center = selectedNode->logicalBounds().center();
-        tb::vm::vec3d target = sm.reflect(center);
+        vm::vec3d center = selectedNode->logicalBounds().center();
+        vm::vec3d target = sm.reflect(center);
         
         for (auto* candidate : allNodes)
         {
             if (candidate == selectedNode) continue;
             if (selection.contains(candidate)) continue;
             
-            if (tb::vm::distance(candidate->logicalBounds().center(), target) < 2.0)
+            if (vm::length(candidate->logicalBounds().center() - target) < 2.0)
             {
                 result.push_back(candidate);
                 break; 
@@ -74,15 +84,7 @@ std::vector<tb::mdl::Node*> findSymmetricNodes(tb::mdl::Map& map, const tb::mdl:
 }
 
 
-#include "mdl/Grid.h"
-#include "mdl/Map.h"
-#include "mdl/Map_Geometry.h"
-#include "mdl/Map_Nodes.h"
-#include "mdl/TransactionScope.h"
-#include "ui/InputState.h"
-#include "ui/MapDocument.h"
 
-#include "vm/bbox.h"
 
 #include <cassert>
 
@@ -149,7 +151,7 @@ MoveObjectsTool::MoveResult MoveObjectsTool::move(
   if (!m_symmetricNodes.empty())
   {
       vm::vec3d reflectedDelta = m_document.symmetryManager().reflectVector(delta);
-      translateNodes(m_symmetricNodes, reflectedDelta);
+      translateNodes(m_symmetricNodes, reflectedDelta, worldBounds);
   }
 
   return translateSelection(map, delta) ? MoveResult::Continue : MoveResult::Deny;
