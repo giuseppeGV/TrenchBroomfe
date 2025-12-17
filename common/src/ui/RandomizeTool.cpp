@@ -11,7 +11,7 @@
 #include "mdl/Map_Groups.h"
 #include "mdl/Map_Nodes.h"
 #include "mdl/Map_Selection.h"
-#include "mdl/Patch.h"
+#include "mdl/BezierPatch.h"
 #include "mdl/PatchNode.h"
 #include "mdl/Selection.h"
 #include "mdl/Transaction.h"
