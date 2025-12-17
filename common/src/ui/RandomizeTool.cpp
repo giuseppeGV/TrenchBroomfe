@@ -11,6 +11,7 @@
 #include "mdl/Map_Groups.h"
 #include "mdl/Map_Nodes.h"
 #include "mdl/Map_Selection.h"
+#include "mdl/ModelUtils.h"
 #include "mdl/BezierPatch.h"
 #include "mdl/PatchNode.h"
 #include "mdl/Selection.h"
@@ -119,7 +120,7 @@ void RandomizeTool::applyRandomization(
               // But 'brush' is a copy.
               
               // We'll check validity indirectly via the Result object.
-              bool ok = true;
+              // We'll check validity indirectly via the Result object.
               // We can't access private members, so we rely on public API.
               // Result usually has an `operator bool() const`.
               // Checking `kd/result.h` (implied):
@@ -164,9 +165,9 @@ void RandomizeTool::applyRandomization(
       const auto ry = vm::to_radians(random_val(minRotate.y(), maxRotate.y()));
       const auto rz = vm::to_radians(random_val(minRotate.z(), maxRotate.z()));
       
-      const auto rotMat = vm::rotation_matrix(vm::vec3d::unit_z(), rz) *
-                          vm::rotation_matrix(vm::vec3d::unit_y(), ry) *
-                          vm::rotation_matrix(vm::vec3d::unit_x(), rx);
+      const auto rotMat = vm::rotation_matrix(vm::vec3d::axis(2), rz) *
+                          vm::rotation_matrix(vm::vec3d::axis(1), ry) *
+                          vm::rotation_matrix(vm::vec3d::axis(0), rx);
 
       const auto sx = random_val(minScale.x(), maxScale.x());
       const auto sy = random_val(minScale.y(), maxScale.y());
