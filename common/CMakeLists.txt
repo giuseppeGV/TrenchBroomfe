@@ -416,6 +416,7 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/ui/PreferencePane.cpp
         ${COMMON_SOURCE_DIR}/ui/QtUtils.cpp
         ${COMMON_SOURCE_DIR}/ui/RandomizeTool.cpp
+        ${COMMON_SOURCE_DIR}/ui/RandomizeToolPage.cpp
         ${COMMON_SOURCE_DIR}/ui/RecentDocumentListBox.cpp
         ${COMMON_SOURCE_DIR}/ui/RecentDocuments.cpp
         ${COMMON_SOURCE_DIR}/ui/RenderView.cpp
@@ -936,6 +937,7 @@ set(COMMON_HEADER
         ${COMMON_SOURCE_DIR}/ui/PreferencePane.h
         ${COMMON_SOURCE_DIR}/ui/QtUtils.h
         ${COMMON_SOURCE_DIR}/ui/RandomizeTool.h
+        ${COMMON_SOURCE_DIR}/ui/RandomizeToolPage.h
         ${COMMON_SOURCE_DIR}/ui/RecentDocumentListBox.h
         ${COMMON_SOURCE_DIR}/ui/RecentDocuments.h
         ${COMMON_SOURCE_DIR}/ui/RenderView.h
