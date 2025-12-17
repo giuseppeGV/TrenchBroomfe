@@ -17,7 +17,7 @@
 #include "mdl/Transaction.h"
 #include "ui/MapDocument.h"
 #include <random>
-#include "vm/transform.h"
+#include "vm/mat_ext.h"
 
 namespace
 {
