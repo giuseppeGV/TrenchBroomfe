@@ -417,6 +417,19 @@ set(COMMON_SOURCE
         ${COMMON_SOURCE_DIR}/ui/QtUtils.cpp
         ${COMMON_SOURCE_DIR}/ui/RandomizeTool.cpp
         ${COMMON_SOURCE_DIR}/ui/RandomizeToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/ArrayTool.cpp
+        ${COMMON_SOURCE_DIR}/ui/ArrayToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/AlignmentTool.cpp
+        ${COMMON_SOURCE_DIR}/ui/AlignmentToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/MeasureTool.cpp
+        ${COMMON_SOURCE_DIR}/ui/MeasureToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/BridgeTool.cpp
+        ${COMMON_SOURCE_DIR}/ui/BridgeToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/PathExtrudeTool.cpp
+        ${COMMON_SOURCE_DIR}/ui/PathExtrudeToolPage.cpp
+        ${COMMON_SOURCE_DIR}/ui/UndoHistoryPanel.cpp
+        ${COMMON_SOURCE_DIR}/ui/QuickActionsToolbar.cpp
+        ${COMMON_SOURCE_DIR}/ui/SmartSnap.cpp
         ${COMMON_SOURCE_DIR}/ui/RecentDocumentListBox.cpp
         ${COMMON_SOURCE_DIR}/ui/RecentDocuments.cpp
         ${COMMON_SOURCE_DIR}/ui/RenderView.cpp

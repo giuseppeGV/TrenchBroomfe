@@ -1381,6 +1381,16 @@ void ActionManager::createEditMenu()
       return context.hasDocument() && context.frame().canDoCsgIntersect();
     },
   }));
+  csgMenu.addItem(addAction(Action{
+    "Menu/Edit/CSG/Union",
+    QObject::tr("Union"),
+    ActionContext::Any,
+    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_U},
+    [](auto& context) { context.frame().csgUnion(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canDoCsgUnion();
+    },
+  }));
 
   auto& vertexEditingMenu = editMenu.addMenu("Vertices");
   vertexEditingMenu.addItem(addAction(Action{
@@ -1737,6 +1747,71 @@ void ActionManager::createToolsMenu()
       return context.hasDocument() && context.frame().randomizeToolActive();
     },
     std::filesystem::path{"RandomizeTool.svg"},
+  }));
+  toolsMenu.addItem(addAction(Action{
+    "Menu/Edit/Tools/Array Tool",
+    QObject::tr("Array Tool"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().toggleArrayTool(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canToggleArrayTool();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().arrayToolActive();
+    },
+  }));
+  toolsMenu.addItem(addAction(Action{
+    "Menu/Edit/Tools/Alignment Tool",
+    QObject::tr("Alignment Tool"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().toggleAlignmentTool(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canToggleAlignmentTool();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().alignmentToolActive();
+    },
+  }));
+  toolsMenu.addItem(addAction(Action{
+    "Menu/Edit/Tools/Measure Tool",
+    QObject::tr("Measure Tool"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().toggleMeasureTool(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canToggleMeasureTool();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().measureToolActive();
+    },
+  }));
+  toolsMenu.addItem(addAction(Action{
+    "Menu/Edit/Tools/Bridge Tool",
+    QObject::tr("Bridge Tool"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().toggleBridgeTool(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canToggleBridgeTool();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().bridgeToolActive();
+    },
+  }));
+  toolsMenu.addItem(addAction(Action{
+    "Menu/Edit/Tools/Path Extrude Tool",
+    QObject::tr("Path Extrude Tool"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.frame().togglePathExtrudeTool(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().canTogglePathExtrudeTool();
+    },
+    [](const auto& context) {
+      return context.hasDocument() && context.frame().pathExtrudeToolActive();
+    },
   }));
   toolsMenu.addItem(addAction(Action{
     "Controls/Map view/Deactivate current tool",

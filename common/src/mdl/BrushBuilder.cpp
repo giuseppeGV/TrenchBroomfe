@@ -761,4 +761,171 @@ Result<Brush> BrushBuilder::createBrush(
              return Brush::create(m_worldBounds, std::move(faces));
            });
 }
+
+Result<Brush> BrushBuilder::createStairStep(
+  const vm::vec3d& position,
+  const vm::vec3d& stepSize,
+  const std::string& materialName) const
+{
+  const auto bounds = vm::bbox3d{position, position + stepSize};
+  return createCuboid(bounds, materialName);
+}
+
+Result<std::vector<Brush>> BrushBuilder::createStairs(
+  const vm::bbox3d& bounds,
+  const size_t stepCount,
+  const vm::axis::type axis,
+  const int direction,
+  const std::string& materialName) const
+{
+  if (stepCount == 0)
+  {
+    return Error{"Step count must be greater than zero"};
+  }
+
+  const auto size = bounds.size();
+  const auto stepHeight = size.z() / static_cast<double>(stepCount);
+  
+  double stepDepth = 0.0;
+  if (axis == vm::axis::x)
+  {
+    stepDepth = size.x() / static_cast<double>(stepCount);
+  }
+  else if (axis == vm::axis::y)
+  {
+    stepDepth = size.y() / static_cast<double>(stepCount);
+  }
+  else
+  {
+    return Error{"Invalid axis for stairs"};
+  }
+
+  auto brushes = std::vector<Result<Brush>>{};
+  brushes.reserve(stepCount);
+
+  for (size_t i = 0; i < stepCount; ++i)
+  {
+    const double zBase = bounds.min.z();
+    const double zTop = zBase + static_cast<double>(i + 1) * stepHeight;
+    
+    vm::bbox3d stepBounds;
+    
+    if (axis == vm::axis::x)
+    {
+      const double xStart = direction > 0 
+        ? bounds.min.x() + static_cast<double>(i) * stepDepth
+        : bounds.max.x() - static_cast<double>(i + 1) * stepDepth;
+      const double xEnd = direction > 0
+        ? bounds.max.x()
+        : bounds.min.x() + static_cast<double>(stepCount - i - 1) * stepDepth;
+      
+      stepBounds = vm::bbox3d{
+        vm::vec3d{xStart, bounds.min.y(), zBase},
+        vm::vec3d{xEnd, bounds.max.y(), zTop}
+      };
+    }
+    else
+    {
+      const double yStart = direction > 0
+        ? bounds.min.y() + static_cast<double>(i) * stepDepth
+        : bounds.max.y() - static_cast<double>(i + 1) * stepDepth;
+      const double yEnd = direction > 0
+        ? bounds.max.y()
+        : bounds.min.y() + static_cast<double>(stepCount - i - 1) * stepDepth;
+      
+      stepBounds = vm::bbox3d{
+        vm::vec3d{bounds.min.x(), yStart, zBase},
+        vm::vec3d{bounds.max.x(), yEnd, zTop}
+      };
+    }
+
+    brushes.push_back(createCuboid(stepBounds, materialName));
+  }
+
+  return brushes | kdl::fold;
+}
+
+Result<std::vector<Brush>> BrushBuilder::createArch(
+  const vm::bbox3d& bounds,
+  const double thickness,
+  const CircleShape& circleShape,
+  const vm::axis::type axis,
+  const std::string& materialName) const
+{
+  // Create arch as hollow cylinder segments (upper half)
+  return createHollowCylinder(bounds, thickness, circleShape, axis, materialName);
+}
+
+Result<std::vector<Brush>> BrushBuilder::createSpiralStairs(
+  const vm::vec3d& center,
+  const double innerRadius,
+  const double outerRadius,
+  const double height,
+  const size_t stepCount,
+  const double rotations,
+  const std::string& materialName) const
+{
+  if (stepCount == 0)
+  {
+    return Error{"Step count must be greater than zero"};
+  }
+  
+  if (innerRadius >= outerRadius)
+  {
+    return Error{"Inner radius must be less than outer radius"};
+  }
+
+  const double stepHeight = height / static_cast<double>(stepCount);
+  const double anglePerStep = rotations * vm::Cd::two_pi() / static_cast<double>(stepCount);
+  
+  auto brushes = std::vector<Result<Brush>>{};
+  brushes.reserve(stepCount);
+
+  for (size_t i = 0; i < stepCount; ++i)
+  {
+    const double startAngle = static_cast<double>(i) * anglePerStep;
+    const double endAngle = static_cast<double>(i + 1) * anglePerStep;
+    const double zBase = center.z() + static_cast<double>(i) * stepHeight;
+    const double zTop = zBase + stepHeight;
+    
+    const auto innerStart = center + vm::vec3d{
+      std::cos(startAngle) * innerRadius,
+      std::sin(startAngle) * innerRadius,
+      0
+    };
+    const auto innerEnd = center + vm::vec3d{
+      std::cos(endAngle) * innerRadius,
+      std::sin(endAngle) * innerRadius,
+      0
+    };
+    
+    const auto outerStart = center + vm::vec3d{
+      std::cos(startAngle) * outerRadius,
+      std::sin(startAngle) * outerRadius,
+      0
+    };
+    const auto outerEnd = center + vm::vec3d{
+      std::cos(endAngle) * outerRadius,
+      std::sin(endAngle) * outerRadius,
+      0
+    };
+    
+    const auto vertices = std::vector<vm::vec3d>{
+      vm::vec3d{innerStart.x(), innerStart.y(), zBase},
+      vm::vec3d{innerStart.x(), innerStart.y(), zTop},
+      vm::vec3d{innerEnd.x(), innerEnd.y(), zBase},
+      vm::vec3d{innerEnd.x(), innerEnd.y(), zTop},
+      vm::vec3d{outerStart.x(), outerStart.y(), zBase},
+      vm::vec3d{outerStart.x(), outerStart.y(), zTop},
+      vm::vec3d{outerEnd.x(), outerEnd.y(), zBase},
+      vm::vec3d{outerEnd.x(), outerEnd.y(), zTop},
+    };
+    
+    brushes.push_back(createBrush(vertices, materialName));
+  }
+
+  return brushes | kdl::fold;
+}
+
 } // namespace tb::mdl
+

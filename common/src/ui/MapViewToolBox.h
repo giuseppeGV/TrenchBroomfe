@@ -51,6 +51,11 @@ class VertexTool;
 class EdgeTool;
 class FaceTool;
 class RandomizeTool;
+class ArrayTool;
+class AlignmentTool;
+class MeasureTool;
+class BridgeTool;
+class PathExtrudeTool;
 
 class MapViewToolBox : public ToolBox
 {
@@ -70,6 +75,11 @@ private:
   std::unique_ptr<EdgeTool> m_edgeTool;
   std::unique_ptr<FaceTool> m_faceTool;
   std::unique_ptr<RandomizeTool> m_randomizeTool;
+  std::unique_ptr<ArrayTool> m_arrayTool;
+  std::unique_ptr<AlignmentTool> m_alignmentTool;
+  std::unique_ptr<MeasureTool> m_measureTool;
+  std::unique_ptr<BridgeTool> m_bridgeTool;
+  std::unique_ptr<PathExtrudeTool> m_pathExtrudeTool;
 
   NotifierConnection m_notifierConnection;
 
@@ -91,6 +101,11 @@ public: // tools
   EdgeTool& edgeTool();
   FaceTool& faceTool();
   RandomizeTool& randomizeTool();
+  ArrayTool& arrayTool();
+  AlignmentTool& alignmentTool();
+  MeasureTool& measureTool();
+  BridgeTool& bridgeTool();
+  PathExtrudeTool& pathExtrudeTool();
 
   void toggleAssembleBrushTool();
   bool assembleBrushToolActive() const;
@@ -127,6 +142,21 @@ public: // tools
 
   void toggleRandomizeTool();
   bool randomizeToolActive() const;
+
+  void toggleArrayTool();
+  bool arrayToolActive() const;
+
+  void toggleAlignmentTool();
+  bool alignmentToolActive() const;
+
+  void toggleMeasureTool();
+  bool measureToolActive() const;
+
+  void toggleBridgeTool();
+  bool bridgeToolActive() const;
+
+  void togglePathExtrudeTool();
+  bool pathExtrudeToolActive() const;
 
   bool anyModalToolActive() const;
 

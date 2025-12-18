@@ -314,6 +314,26 @@ public:
   bool canToggleRandomizeTool() const;
   bool randomizeToolActive() const;
 
+  void toggleArrayTool();
+  bool canToggleArrayTool() const;
+  bool arrayToolActive() const;
+
+  void toggleAlignmentTool();
+  bool canToggleAlignmentTool() const;
+  bool alignmentToolActive() const;
+
+  void toggleMeasureTool();
+  bool canToggleMeasureTool() const;
+  bool measureToolActive() const;
+
+  void toggleBridgeTool();
+  bool canToggleBridgeTool() const;
+  bool bridgeToolActive() const;
+
+  void togglePathExtrudeTool();
+  bool canTogglePathExtrudeTool() const;
+  bool pathExtrudeToolActive() const;
+
   void csgConvexMerge();
   bool canDoCsgConvexMerge() const;
 
@@ -325,6 +345,9 @@ public:
 
   void csgIntersect();
   bool canDoCsgIntersect() const;
+
+  void csgUnion();
+  bool canDoCsgUnion() const;
 
   void snapVerticesToInteger();
   void snapVerticesToGrid();

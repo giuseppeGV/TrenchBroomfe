@@ -72,6 +72,7 @@ bool csgConvexMerge(Map& map);
 bool csgSubtract(Map& map);
 bool csgIntersect(Map& map);
 bool csgHollow(Map& map);
+bool csgUnion(Map& map);
 
 bool extrudeBrushes(
   Map& map, const std::vector<vm::polygon3d>& faces, const vm::vec3d& delta);

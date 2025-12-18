@@ -1895,6 +1895,21 @@ bool MapFrame::canDoCsgIntersect() const
   return selection.hasOnlyBrushes() && selection.brushes.size() > 1;
 }
 
+void MapFrame::csgUnion()
+{
+  if (canDoCsgUnion())
+  {
+    mdl::csgUnion(m_document->map());
+  }
+}
+
+bool MapFrame::canDoCsgUnion() const
+{
+  const auto& map = m_document->map();
+  const auto& selection = map.selection();
+  return selection.hasOnlyBrushes() && selection.brushes.size() > 1;
+}
+
 void MapFrame::snapVerticesToInteger()
 {
   if (canSnapVertices())
@@ -2551,6 +2566,81 @@ bool MapFrame::canToggleRandomizeTool() const
 bool MapFrame::randomizeToolActive() const
 {
   return m_mapView->mapViewToolBox().randomizeToolActive();
+}
+
+void MapFrame::toggleArrayTool()
+{
+  m_mapView->mapViewToolBox().toggleArrayTool();
+}
+
+bool MapFrame::canToggleArrayTool() const
+{
+  return true;
+}
+
+bool MapFrame::arrayToolActive() const
+{
+  return m_mapView->mapViewToolBox().arrayToolActive();
+}
+
+void MapFrame::toggleAlignmentTool()
+{
+  m_mapView->mapViewToolBox().toggleAlignmentTool();
+}
+
+bool MapFrame::canToggleAlignmentTool() const
+{
+  return true;
+}
+
+bool MapFrame::alignmentToolActive() const
+{
+  return m_mapView->mapViewToolBox().alignmentToolActive();
+}
+
+void MapFrame::toggleMeasureTool()
+{
+  m_mapView->mapViewToolBox().toggleMeasureTool();
+}
+
+bool MapFrame::canToggleMeasureTool() const
+{
+  return true;
+}
+
+bool MapFrame::measureToolActive() const
+{
+  return m_mapView->mapViewToolBox().measureToolActive();
+}
+
+void MapFrame::toggleBridgeTool()
+{
+  m_mapView->mapViewToolBox().toggleBridgeTool();
+}
+
+bool MapFrame::canToggleBridgeTool() const
+{
+  return true;
+}
+
+bool MapFrame::bridgeToolActive() const
+{
+  return m_mapView->mapViewToolBox().bridgeToolActive();
+}
+
+void MapFrame::togglePathExtrudeTool()
+{
+  m_mapView->mapViewToolBox().togglePathExtrudeTool();
+}
+
+bool MapFrame::canTogglePathExtrudeTool() const
+{
+  return true;
+}
+
+bool MapFrame::pathExtrudeToolActive() const
+{
+  return m_mapView->mapViewToolBox().pathExtrudeToolActive();
 }
 
 void MapFrame::searchByTexture()

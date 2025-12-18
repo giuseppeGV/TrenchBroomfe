@@ -34,6 +34,11 @@
 #include "ui/ShearTool.h"
 #include "ui/VertexTool.h"
 #include "ui/RandomizeTool.h"
+#include "ui/ArrayTool.h"
+#include "ui/AlignmentTool.h"
+#include "ui/MeasureTool.h"
+#include "ui/BridgeTool.h"
+#include "ui/PathExtrudeTool.h"
 
 #include "kd/contracts.h"
 
@@ -112,6 +117,31 @@ FaceTool& MapViewToolBox::faceTool()
 RandomizeTool& MapViewToolBox::randomizeTool()
 {
   return *m_randomizeTool;
+}
+
+ArrayTool& MapViewToolBox::arrayTool()
+{
+  return *m_arrayTool;
+}
+
+AlignmentTool& MapViewToolBox::alignmentTool()
+{
+  return *m_alignmentTool;
+}
+
+MeasureTool& MapViewToolBox::measureTool()
+{
+  return *m_measureTool;
+}
+
+BridgeTool& MapViewToolBox::bridgeTool()
+{
+  return *m_bridgeTool;
+}
+
+PathExtrudeTool& MapViewToolBox::pathExtrudeTool()
+{
+  return *m_pathExtrudeTool;
 }
 
 void MapViewToolBox::toggleAssembleBrushTool()
@@ -257,10 +287,62 @@ bool MapViewToolBox::randomizeToolActive() const
   return m_randomizeTool->active();
 }
 
+void MapViewToolBox::toggleArrayTool()
+{
+  toggleTool(arrayTool());
+}
+
+bool MapViewToolBox::arrayToolActive() const
+{
+  return m_arrayTool->active();
+}
+
+void MapViewToolBox::toggleAlignmentTool()
+{
+  toggleTool(alignmentTool());
+}
+
+bool MapViewToolBox::alignmentToolActive() const
+{
+  return m_alignmentTool->active();
+}
+
+void MapViewToolBox::toggleMeasureTool()
+{
+  toggleTool(measureTool());
+}
+
+bool MapViewToolBox::measureToolActive() const
+{
+  return m_measureTool->active();
+}
+
+void MapViewToolBox::toggleBridgeTool()
+{
+  toggleTool(bridgeTool());
+}
+
+bool MapViewToolBox::bridgeToolActive() const
+{
+  return m_bridgeTool->active();
+}
+
+void MapViewToolBox::togglePathExtrudeTool()
+{
+  toggleTool(pathExtrudeTool());
+}
+
+bool MapViewToolBox::pathExtrudeToolActive() const
+{
+  return m_pathExtrudeTool->active();
+}
+
 bool MapViewToolBox::anyModalToolActive() const
 {
   return rotateToolActive() || scaleToolActive() || shearToolActive()
-         || anyVertexToolActive() || randomizeToolActive();
+         || anyVertexToolActive() || randomizeToolActive()
+         || arrayToolActive() || alignmentToolActive() || measureToolActive()
+         || bridgeToolActive() || pathExtrudeToolActive();
 }
 
 void MapViewToolBox::moveVertices(const vm::vec3d& delta)
@@ -296,6 +378,11 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
   m_edgeTool = std::make_unique<EdgeTool>(m_document);
   m_faceTool = std::make_unique<FaceTool>(m_document);
   m_randomizeTool = std::make_unique<RandomizeTool>(m_document);
+  m_arrayTool = std::make_unique<ArrayTool>(m_document);
+  m_alignmentTool = std::make_unique<AlignmentTool>(m_document);
+  m_measureTool = std::make_unique<MeasureTool>(m_document);
+  m_bridgeTool = std::make_unique<BridgeTool>(m_document);
+  m_pathExtrudeTool = std::make_unique<PathExtrudeTool>(m_document);
 
   addExclusiveToolGroup(
     assembleBrushTool(),
@@ -305,10 +392,17 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
     edgeTool(),
     faceTool(),
     clipTool(),
-    randomizeTool());
+    randomizeTool(),
+    arrayTool(),
+    alignmentTool(),
+    measureTool(),
+    bridgeTool(),
+    pathExtrudeTool());
 
   addExclusiveToolGroup(
-    assembleBrushTool(), vertexTool(), edgeTool(), faceTool(), clipTool(), randomizeTool());
+    assembleBrushTool(), vertexTool(), edgeTool(), faceTool(), clipTool(), 
+    randomizeTool(), arrayTool(), alignmentTool(), measureTool(), bridgeTool(),
+    pathExtrudeTool());
 
   suppressWhileActive(
     assembleBrushTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
@@ -320,6 +414,11 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
   suppressWhileActive(faceTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
   suppressWhileActive(clipTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
   suppressWhileActive(randomizeTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
+  suppressWhileActive(arrayTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
+  suppressWhileActive(alignmentTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
+  suppressWhileActive(measureTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
+  suppressWhileActive(bridgeTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
+  suppressWhileActive(pathExtrudeTool(), moveObjectsTool(), extrudeTool(), drawShapeTool());
 
   registerTool(moveObjectsTool(), bookCtrl);
   registerTool(rotateTool(), bookCtrl);
@@ -332,6 +431,11 @@ void MapViewToolBox::createTools(QStackedLayout* bookCtrl)
   registerTool(edgeTool(), bookCtrl);
   registerTool(faceTool(), bookCtrl);
   registerTool(randomizeTool(), bookCtrl);
+  registerTool(arrayTool(), bookCtrl);
+  registerTool(alignmentTool(), bookCtrl);
+  registerTool(measureTool(), bookCtrl);
+  registerTool(bridgeTool(), bookCtrl);
+  registerTool(pathExtrudeTool(), bookCtrl);
   registerTool(createEntityTool(), bookCtrl);
   registerTool(drawShapeTool(), bookCtrl);
 
@@ -419,6 +523,26 @@ void MapViewToolBox::updateToolPage()
   else if (randomizeToolActive())
   {
     randomizeTool().showPage();
+  }
+  else if (arrayToolActive())
+  {
+    arrayTool().showPage();
+  }
+  else if (alignmentToolActive())
+  {
+    alignmentTool().showPage();
+  }
+  else if (measureToolActive())
+  {
+    measureTool().showPage();
+  }
+  else if (bridgeToolActive())
+  {
+    bridgeTool().showPage();
+  }
+  else if (pathExtrudeToolActive())
+  {
+    pathExtrudeTool().showPage();
   }
   else
   {

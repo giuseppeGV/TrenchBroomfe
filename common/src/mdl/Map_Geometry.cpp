@@ -878,6 +878,75 @@ bool csgHollow(Map& map)
   return transaction.commit();
 }
 
+bool csgUnion(Map& map)
+{
+  // CSG Union combines multiple brushes into a single convex hull
+  // For non-convex shapes, we keep all original brushes but group them
+  const auto brushNodes = map.selection().brushes;
+  if (brushNodes.size() < 2u)
+  {
+    return false;
+  }
+
+  // Collect all vertices from all selected brushes
+  auto points = std::vector<vm::vec3d>{};
+  for (const auto* brushNode : brushNodes)
+  {
+    for (const auto* vertex : brushNode->brush().vertices())
+    {
+      points.push_back(vertex->position());
+    }
+  }
+
+  // Try to create a convex hull from all points
+  auto polyhedron = Polyhedron3{std::move(points)};
+  
+  if (!polyhedron.polyhedron() || !polyhedron.closed())
+  {
+    // Cannot create a valid convex hull, fallback to grouping
+    map.logger().info() << "Cannot create convex union, result would not be convex. "
+                        << "Grouping brushes instead.";
+    return groupSelection(map, "Union");
+  }
+
+  const auto builder = BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+    
+  return builder.createBrush(polyhedron, map.currentMaterialName())
+         | kdl::transform([&](auto b) {
+             // Clone face attributes from original brushes
+             b.cloneFaceAttributesFrom(
+               brushNodes | std::views::transform([](const auto* brushNode) {
+                 return &brushNode->brush();
+               })
+               | kdl::ranges::to<std::vector>());
+
+             const auto toRemove = std::vector<Node*>{
+               std::begin(brushNodes), std::end(brushNodes)};
+
+             // Use the parent of the first brush
+             auto* parentNode = brushNodes.front()->parent();
+
+             auto* unionNode = new BrushNode{std::move(b)};
+
+             auto transaction = Transaction{map, "CSG Union"};
+             deselectAll(map);
+             if (addNodes(map, {{parentNode, {unionNode}}}).empty())
+             {
+               transaction.cancel();
+               return;
+             }
+             removeNodes(map, toRemove);
+             selectNodes(map, {unionNode});
+             transaction.commit();
+           })
+         | kdl::if_error(
+           [&](auto e) { map.logger().error() << "Could not create union brush: " << e.msg; })
+         | kdl::is_success();
+}
+
 bool extrudeBrushes(
   Map& map, const std::vector<vm::polygon3d>& faces, const vm::vec3d& delta)
 {
