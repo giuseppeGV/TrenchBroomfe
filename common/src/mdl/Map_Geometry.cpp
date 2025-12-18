@@ -906,7 +906,7 @@ bool csgUnion(Map& map)
     // Cannot create a valid convex hull, fallback to grouping
     map.logger().info() << "Cannot create convex union, result would not be convex. "
                         << "Grouping brushes instead.";
-    return groupSelection(map, "Union");
+    return groupSelectedNodes(map, "Union") != nullptr;
   }
 
   const auto builder = BrushBuilder{
