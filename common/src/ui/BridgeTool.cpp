@@ -159,17 +159,19 @@ bool BridgeTool::createBridge()
   }
 
   // Get the bounding boxes of the faces for sizing
-  auto bounds1 = vm::bbox3d{};
+  auto builder1 = vm::bbox3d::builder{};
   for (const auto* v : vertices1)
   {
-    bounds1 = bounds1.mergeWith(v->position());
+    builder1.add(v->position());
   }
+  const auto bounds1 = builder1.bounds();
   
-  auto bounds2 = vm::bbox3d{};
+  auto builder2 = vm::bbox3d::builder{};
   for (const auto* v : vertices2)
   {
-    bounds2 = bounds2.mergeWith(v->position());
+    builder2.add(v->position());
   }
+  const auto bounds2 = builder2.bounds();
 
   const auto size1 = bounds1.size();
   const auto size2 = bounds2.size();

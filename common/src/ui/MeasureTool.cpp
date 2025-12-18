@@ -147,16 +147,15 @@ MeasurementResult MeasureTool::measureSelection() const
           {
             // Use the shoelace formula for polygon area in 3D
             // We project onto the dominant plane based on the face normal
-            const auto& normal = face.normal();
-            
             // Simple area calculation using cross products
             double faceArea = 0.0;
-            const auto verticesVec = std::vector<std::reference_wrapper<const mdl::BrushVertex>>(vertices.begin(), vertices.end());
-            const auto& v0 = verticesVec[0].get().position();
+            // Vertices are pointers, so store them as such
+            const auto verticesVec = std::vector<const mdl::BrushVertex*>(vertices.begin(), vertices.end());
+            const auto& v0 = verticesVec[0]->position();
             for (size_t j = 1; j < verticesVec.size() - 1; ++j)
             {
-              const auto& v1 = verticesVec[j].get().position();
-              const auto& v2 = verticesVec[j + 1].get().position();
+              const auto& v1 = verticesVec[j]->position();
+              const auto& v2 = verticesVec[j + 1]->position();
               const auto cross = vm::cross(v1 - v0, v2 - v0);
               faceArea += vm::length(cross) * 0.5;
             }
