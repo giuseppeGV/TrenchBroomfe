@@ -88,13 +88,13 @@ void UndoHistoryPanel::updateHistoryList()
   auto& map = m_document.map();
   
   // Get command names from the undo stack
-  const auto undoCommandNames = map.undoCommandNames();
-  const auto redoCommandNames = map.redoCommandNames();
+  const auto& undoStack = map.commandProcessor().undoStack();
+  const auto& redoStack = map.commandProcessor().redoStack();
   
   // Add undo items (completed commands, displayed bottom to top)
-  for (size_t i = undoCommandNames.size(); i > 0; --i)
+  for (size_t i = undoStack.size(); i > 0; --i)
   {
-    auto* item = new QListWidgetItem{QString::fromStdString(undoCommandNames[i - 1])};
+    auto* item = new QListWidgetItem{QString::fromStdString(undoStack[i - 1]->name())};
     item->setIcon(style()->standardIcon(QStyle::SP_DialogApplyButton));
     item->setForeground(Qt::white);
     m_historyList->addItem(item);
@@ -108,17 +108,17 @@ void UndoHistoryPanel::updateHistoryList()
   m_historyList->addItem(currentItem);
   
   // Add redo items (undone commands, top to bottom)
-  for (const auto& name : redoCommandNames)
+  for (size_t i = redoStack.size(); i > 0; --i)
   {
-    auto* item = new QListWidgetItem{QString::fromStdString(name)};
+    auto* item = new QListWidgetItem{QString::fromStdString(redoStack[i - 1]->name())};
     item->setIcon(style()->standardIcon(QStyle::SP_DialogCancelButton));
     item->setForeground(QColor("#6c7086")); // Dimmed
     m_historyList->addItem(item);
   }
   
   // Update button states
-  m_undoButton->setEnabled(map.canUndo());
-  m_redoButton->setEnabled(map.canRedo());
+  m_undoButton->setEnabled(map.commandProcessor().canUndo());
+  m_redoButton->setEnabled(map.commandProcessor().canRedo());
   
   // Scroll to current position
   m_historyList->scrollToItem(currentItem);
@@ -127,24 +127,24 @@ void UndoHistoryPanel::updateHistoryList()
 void UndoHistoryPanel::connectObservers()
 {
   // Connect to document notifications
-  connect(&m_document, &MapDocument::documentModificationStateDidChange,
+  connect(&m_document, &MapDocument::modificationStateDidChangeNotifier,
           this, &UndoHistoryPanel::updateHistoryList);
 }
 
 void UndoHistoryPanel::onUndoClicked()
 {
-  if (m_document.map().canUndo())
+  if (m_document.map().commandProcessor().canUndo())
   {
-    m_document.map().undo();
+    m_document.map().commandProcessor().undo();
     updateHistoryList();
   }
 }
 
 void UndoHistoryPanel::onRedoClicked()
 {
-  if (m_document.map().canRedo())
+  if (m_document.map().commandProcessor().canRedo())
   {
-    m_document.map().redo();
+    m_document.map().commandProcessor().redo();
     updateHistoryList();
   }
 }
@@ -152,7 +152,7 @@ void UndoHistoryPanel::onRedoClicked()
 void UndoHistoryPanel::onHistoryItemDoubleClicked(int row)
 {
   auto& map = m_document.map();
-  const auto undoCount = static_cast<int>(map.undoCommandNames().size());
+  const auto undoCount = static_cast<int>(map.commandProcessor().undoStack().size());
   
   // Row 0 to undoCount-1 are undo items (in reverse order)
   // Row undoCount is the "current state" marker
@@ -162,18 +162,18 @@ void UndoHistoryPanel::onHistoryItemDoubleClicked(int row)
   {
     // Need to undo (undoCount - row) times
     const int timesToUndo = undoCount - row;
-    for (int i = 0; i < timesToUndo && map.canUndo(); ++i)
+    for (int i = 0; i < timesToUndo && map.commandProcessor().canUndo(); ++i)
     {
-      map.undo();
+      map.commandProcessor().undo();
     }
   }
   else if (row > undoCount)
   {
     // Need to redo (row - undoCount) times
     const int timesToRedo = row - undoCount;
-    for (int i = 0; i < timesToRedo && map.canRedo(); ++i)
+    for (int i = 0; i < timesToRedo && map.commandProcessor().canRedo(); ++i)
     {
-      map.redo();
+      map.commandProcessor().redo();
     }
   }
   

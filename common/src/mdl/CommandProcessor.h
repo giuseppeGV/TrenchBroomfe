@@ -395,6 +395,10 @@ private:
    * @return the topmost command of the redo stack
    */
   std::unique_ptr<UndoableCommand> popFromRedoStack();
+
+public:
+  const std::vector<std::unique_ptr<UndoableCommand>>& undoStack() const;
+  const std::vector<std::unique_ptr<UndoableCommand>>& redoStack() const;
 };
 
 } // namespace tb::mdl

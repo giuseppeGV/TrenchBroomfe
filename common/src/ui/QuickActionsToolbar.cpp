@@ -20,6 +20,7 @@
 #include "QuickActionsToolbar.h"
 
 #include "io/ResourceUtils.h"
+#include "mdl/Grid.h"
 #include "mdl/Map.h"
 #include "ui/MapDocument.h"
 #include "ui/MapFrame.h"
@@ -42,7 +43,7 @@ QuickActionsToolbar::QuickActionsToolbar(MapFrame& frame, MapDocument& document,
   
   createActions();
   
-  connect(&m_document, &MapDocument::documentModificationStateDidChange,
+  connect(&m_document, &MapDocument::modificationStateDidChangeNotifier,
           this, &QuickActionsToolbar::updateActionStates);
 }
 
@@ -86,25 +87,33 @@ void QuickActionsToolbar::createTransformSection()
   // Flip Horizontal
   m_flipH = addAction(io::loadSVGIcon("FlipHorizontal.svg"), tr("Flip Horizontal"));
   m_flipH->setToolTip(tr("Flip Horizontal (Ctrl+F)"));
-  connect(m_flipH, &QAction::triggered, &m_frame, &MapFrame::flipObjectsHorizontally);
+  connect(m_flipH, &QAction::triggered, [this]() {
+      if (auto* action = m_frame.findAction("Controls/Map view/Flip objects horizontally"))
+          action->trigger();
+  });
 
   // Flip Vertical
   m_flipV = addAction(io::loadSVGIcon("FlipVertical.svg"), tr("Flip Vertical"));
   m_flipV->setToolTip(tr("Flip Vertical (Ctrl+Alt+F)"));
-  connect(m_flipV, &QAction::triggered, &m_frame, &MapFrame::flipObjectsVertically);
+  connect(m_flipV, &QAction::triggered, [this]() {
+      if (auto* action = m_frame.findAction("Controls/Map view/Flip objects vertically"))
+          action->trigger();
+  });
 
   // Rotate Left
   m_rotateLeft = addAction(io::loadSVGIcon("RotateLeft.svg"), tr("Rotate Left"));
   m_rotateLeft->setToolTip(tr("Rotate 90° Left"));
   connect(m_rotateLeft, &QAction::triggered, [this]() {
-    m_frame.rotateObjects(vm::rotation_axis::z_cw);
+      if (auto* action = m_frame.findAction("Controls/Map view/Yaw objects clockwise"))
+          action->trigger();
   });
 
   // Rotate Right
   m_rotateRight = addAction(io::loadSVGIcon("RotateRight.svg"), tr("Rotate Right"));
   m_rotateRight->setToolTip(tr("Rotate 90° Right"));
   connect(m_rotateRight, &QAction::triggered, [this]() {
-    m_frame.rotateObjects(vm::rotation_axis::z_ccw);
+      if (auto* action = m_frame.findAction("Controls/Map view/Yaw objects counter-clockwise"))
+          action->trigger();
   });
 }
 
@@ -114,14 +123,23 @@ void QuickActionsToolbar::createViewSection()
   m_toggleGrid = addAction(io::loadSVGIcon("GridToggle.svg"), tr("Toggle Grid"));
   m_toggleGrid->setToolTip(tr("Toggle Grid Visibility"));
   m_toggleGrid->setCheckable(true);
-  connect(m_toggleGrid, &QAction::triggered, &m_frame, &MapFrame::toggleShowGrid);
+  connect(m_toggleGrid, &QAction::triggered, [this]() {
+        // Toggle directly on the map grid object, safer than relying on frame action existence
+        m_document.map().grid().setVisible(!m_document.map().grid().visible());
+  });
 
   // Toggle Textures
   m_toggleTextures = addAction(io::loadSVGIcon("TextureToggle.svg"), tr("Toggle Textures"));
   m_toggleTextures->setToolTip(tr("Toggle Material Visibility"));
   m_toggleTextures->setCheckable(true);
-  connect(m_toggleTextures, &QAction::triggered, [this]() {
-    m_frame.toggleShowMaterials();
+  connect(m_toggleTextures, &QAction::triggered, [this](bool checked) {
+    if (checked) {
+        if (auto* action = m_frame.findAction("Controls/Map view/View Filter > Show textures"))
+            action->trigger();
+    } else {
+        if (auto* action = m_frame.findAction("Controls/Map view/View Filter > Hide textures"))
+            action->trigger();
+    }
   });
 
   // Grid snap dropdown

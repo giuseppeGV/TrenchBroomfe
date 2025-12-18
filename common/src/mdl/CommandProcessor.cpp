@@ -460,4 +460,15 @@ std::unique_ptr<UndoableCommand> CommandProcessor::popFromRedoStack()
   return kdl::vec_pop_back(m_redoStack);
 }
 
+
+const std::vector<std::unique_ptr<UndoableCommand>>& CommandProcessor::undoStack() const
+{
+  return m_undoStack;
+}
+
+const std::vector<std::unique_ptr<UndoableCommand>>& CommandProcessor::redoStack() const
+{
+  return m_redoStack;
+}
+
 } // namespace tb::mdl
