@@ -69,9 +69,11 @@ public:
   double angle() const;
 
   bool visible() const;
+  void setVisible(bool visible);
   void toggleVisible();
 
   bool snap() const;
+  void setSnap(bool snap);
   void toggleSnap();
 
   template <typename T>

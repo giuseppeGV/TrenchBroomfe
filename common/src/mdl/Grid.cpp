@@ -87,15 +87,24 @@ double Grid::angle() const
   return vm::to_radians(static_cast<double>(15.0));
 }
 
+
 bool Grid::visible() const
 {
   return m_visible;
 }
 
+void Grid::setVisible(bool visible)
+{
+  if (m_visible != visible)
+  {
+    m_visible = visible;
+    gridDidChangeNotifier();
+  }
+}
+
 void Grid::toggleVisible()
 {
-  m_visible = !m_visible;
-  gridDidChangeNotifier();
+  setVisible(!m_visible);
 }
 
 bool Grid::snap() const
@@ -103,10 +112,17 @@ bool Grid::snap() const
   return m_snap;
 }
 
+void Grid::setSnap(bool snap)
+{
+  if (m_snap != snap) {
+    m_snap = snap;
+    gridDidChangeNotifier();
+  }
+}
+
 void Grid::toggleSnap()
 {
-  m_snap = !m_snap;
-  gridDidChangeNotifier();
+  setSnap(!m_snap);
 }
 
 double Grid::intersectWithRay(const vm::ray3d& ray, const size_t skip) const
