@@ -164,7 +164,12 @@ void ArrayTool::applyLinearArray(
                 auto* newBrushNode = new BrushNode{std::move(brush)};
                 newEntityNode->addChild(newBrushNode);
               },
-              [](auto*) {}
+              [](BrushNode*) {},
+              [](EntityNode*) {},
+              [](PatchNode*) {},
+              [](GroupNode*) {},
+              [](WorldNode*) {},
+              [](LayerNode*) {}
             ));
           });
         },

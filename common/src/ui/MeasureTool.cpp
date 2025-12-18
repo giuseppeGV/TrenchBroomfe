@@ -114,7 +114,7 @@ MeasurementResult MeasureTool::measureSelection() const
     return result;
   }
 
-  const auto bounds = map.selection().selectionBounds();
+  const auto bounds = *map.selectionBounds();
   const auto size = bounds.size();
 
   result.distanceX = size.x();
@@ -151,11 +151,12 @@ MeasurementResult MeasureTool::measureSelection() const
             
             // Simple area calculation using cross products
             double faceArea = 0.0;
-            const auto& v0 = vertices[0]->position();
-            for (size_t j = 1; j < vertices.size() - 1; ++j)
+            const auto verticesVec = std::vector<std::reference_wrapper<const mdl::BrushVertex>>(vertices.begin(), vertices.end());
+            const auto& v0 = verticesVec[0].get().position();
+            for (size_t j = 1; j < verticesVec.size() - 1; ++j)
             {
-              const auto& v1 = vertices[j]->position();
-              const auto& v2 = vertices[j + 1]->position();
+              const auto& v1 = verticesVec[j].get().position();
+              const auto& v2 = verticesVec[j + 1].get().position();
               const auto cross = vm::cross(v1 - v0, v2 - v0);
               faceArea += vm::length(cross) * 0.5;
             }
@@ -188,7 +189,7 @@ vm::vec3d MeasureTool::selectionDimensions() const
     return vm::vec3d{0, 0, 0};
   }
 
-  const auto bounds = map.selection().selectionBounds();
+  const auto bounds = *map.selectionBounds();
   return bounds.size();
 }
 

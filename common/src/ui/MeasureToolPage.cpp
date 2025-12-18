@@ -233,7 +233,7 @@ void MeasureToolPage::useSelectionStartClicked()
   const auto& map = m_document.map();
   if (map.selection().hasNodes())
   {
-    const auto bounds = map.selection().selectionBounds();
+    const auto bounds = *map.selectionBounds();
     m_startX->setValue(bounds.min.x());
     m_startY->setValue(bounds.min.y());
     m_startZ->setValue(bounds.min.z());
@@ -246,7 +246,7 @@ void MeasureToolPage::useSelectionEndClicked()
   const auto& map = m_document.map();
   if (map.selection().hasNodes())
   {
-    const auto bounds = map.selection().selectionBounds();
+    const auto bounds = *map.selectionBounds();
     m_endX->setValue(bounds.max.x());
     m_endY->setValue(bounds.max.y());
     m_endZ->setValue(bounds.max.z());
