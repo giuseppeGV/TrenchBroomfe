@@ -30,6 +30,7 @@
 #include "mdl/Map.h"
 #include "mdl/Map_CopyPaste.h"
 #include "mdl/Map_Groups.h"
+#include "mdl/Map_Groups.h"
 #include "mdl/Map_Nodes.h"
 #include "mdl/Map_Selection.h"
 #include "mdl/ModelUtils.h"
@@ -112,7 +113,7 @@ void ArrayTool::applyLinearArray(
             child->accept(kdl::overload(
               [&](BrushNode* brushNode) {
                 auto brush = brushNode->brush();
-                brush.transform(map.worldBounds(), transform, false);
+                (void)brush.transform(map.worldBounds(), transform, false);
                 auto* newBrushNode = new BrushNode{std::move(brush)};
                 newGroupNode->addChild(newBrushNode);
               },
@@ -159,7 +160,7 @@ void ArrayTool::applyLinearArray(
             child->accept(kdl::overload(
               [&](BrushNode* childBrush) {
                 auto brush = childBrush->brush();
-                brush.transform(map.worldBounds(), transform, false);
+                (void)brush.transform(map.worldBounds(), transform, false);
                 auto* newBrushNode = new BrushNode{std::move(brush)};
                 newEntityNode->addChild(newBrushNode);
               },
@@ -186,7 +187,7 @@ void ArrayTool::applyLinearArray(
     std::vector<Node*> toGroup = nodesToDuplicate;
     toGroup.insert(toGroup.end(), allNewNodes.begin(), allNewNodes.end());
     selectNodes(map, toGroup);
-    groupSelection(map, "Array");
+    groupSelectedNodes(map, "Array");
   }
   else if (!allNewNodes.empty())
   {
@@ -211,7 +212,7 @@ void ArrayTool::applyGridArray(
   }
 
   // Calculate the bounding box of selected objects for spacing
-  const auto bounds = map.selection().selectionBounds();
+  const auto bounds = *map.selectionBounds();
   const auto size = bounds.size();
 
   // Add object size to spacing for proper separation
@@ -292,7 +293,7 @@ void ArrayTool::applyGridArray(
     std::vector<Node*> toGroup = nodesToDuplicate;
     toGroup.insert(toGroup.end(), allNewNodes.begin(), allNewNodes.end());
     selectNodes(map, toGroup);
-    groupSelection(map, "Grid Array");
+    groupSelectedNodes(map, "Grid Array");
   }
   else if (!allNewNodes.empty())
   {
@@ -382,7 +383,7 @@ void ArrayTool::applyRadialArray(
     std::vector<Node*> toGroup = nodesToDuplicate;
     toGroup.insert(toGroup.end(), allNewNodes.begin(), allNewNodes.end());
     selectNodes(map, toGroup);
-    groupSelection(map, "Radial Array");
+    groupSelectedNodes(map, "Radial Array");
   }
   else if (!allNewNodes.empty())
   {

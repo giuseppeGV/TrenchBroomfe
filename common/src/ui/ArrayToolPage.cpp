@@ -301,7 +301,7 @@ void ArrayToolPage::useSelectionCenterClicked()
   const auto& map = m_document.map();
   if (map.selection().hasNodes())
   {
-    const auto bounds = map.selection().selectionBounds();
+    const auto bounds = *map.selectionBounds();
     const auto center = bounds.center();
     m_radialCenterX->setValue(center.x());
     m_radialCenterY->setValue(center.y());

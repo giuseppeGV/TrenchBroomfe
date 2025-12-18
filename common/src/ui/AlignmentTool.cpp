@@ -28,9 +28,11 @@
 #include "mdl/GroupNode.h"
 #include "mdl/LayerNode.h"
 #include "mdl/Map.h"
+#include "mdl/Grid.h" // Added for Grid
 #include "mdl/Map_Geometry.h"
 #include "mdl/Map_Selection.h"
 #include "mdl/ModelUtils.h"
+#include "mdl/Map_Nodes.h" // Added for updateNodeContents
 #include "mdl/NodeContents.h"
 #include "mdl/PatchNode.h"
 #include "mdl/Selection.h"
@@ -107,7 +109,7 @@ void AlignmentTool::alignObjects(int axis, AlignMode mode, bool alignToFirst)
   else
   {
     // Calculate bounds of all selected objects
-    const auto totalBounds = map.selection().selectionBounds();
+    const auto totalBounds = *map.selectionBounds();
     switch (mode)
     {
     case AlignMode::Min:
@@ -153,23 +155,23 @@ void AlignmentTool::alignObjects(int axis, AlignMode mode, bool alignToFirst)
       node->accept(kdl::overload(
         [&](BrushNode* brushNode) {
           auto brush = brushNode->brush();
-          brush.transform(map.worldBounds(), transform, false);
-          updateNodeContents(map, "Align", {{brushNode, NodeContents{std::move(brush)}}}, {});
+          (void)brush.transform(map.worldBounds(), transform, false);
+          mdl::updateNodeContents(map, "Align", {{brushNode, NodeContents{std::move(brush)}}}, {});
         },
         [&](EntityNode* entityNode) {
           auto entity = entityNode->entity();
-          entity.transform(transform, false);
-          updateNodeContents(map, "Align", {{entityNode, NodeContents{std::move(entity)}}}, {});
+          (void)entity.transform(transform, false);
+          mdl::updateNodeContents(map, "Align", {{entityNode, NodeContents{std::move(entity)}}}, {});
         },
         [&](GroupNode* groupNode) {
           auto group = groupNode->group();
           group.transform(transform);
-          updateNodeContents(map, "Align", {{groupNode, NodeContents{std::move(group)}}}, {});
+          mdl::updateNodeContents(map, "Align", {{groupNode, NodeContents{std::move(group)}}}, {});
         },
         [&](PatchNode* patchNode) {
           auto patch = patchNode->patch();
           patch.transform(transform);
-          updateNodeContents(map, "Align", {{patchNode, NodeContents{std::move(patch)}}}, {});
+          mdl::updateNodeContents(map, "Align", {{patchNode, NodeContents{std::move(patch)}}}, {});
         },
         [](WorldNode*) {},
         [](LayerNode*) {}
@@ -242,23 +244,23 @@ void AlignmentTool::distributeObjects(int axis, bool useSpacing, double spacing)
       node->accept(kdl::overload(
         [&](BrushNode* brushNode) {
           auto brush = brushNode->brush();
-          brush.transform(map.worldBounds(), transform, false);
-          updateNodeContents(map, "Distribute", {{brushNode, NodeContents{std::move(brush)}}}, {});
+          (void)brush.transform(map.worldBounds(), transform, false);
+          mdl::updateNodeContents(map, "Distribute", {{brushNode, NodeContents{std::move(brush)}}}, {});
         },
         [&](EntityNode* entityNode) {
           auto entity = entityNode->entity();
-          entity.transform(transform, false);
-          updateNodeContents(map, "Distribute", {{entityNode, NodeContents{std::move(entity)}}}, {});
+          (void)entity.transform(transform, false);
+          mdl::updateNodeContents(map, "Distribute", {{entityNode, NodeContents{std::move(entity)}}}, {});
         },
         [&](GroupNode* groupNode) {
           auto group = groupNode->group();
           group.transform(transform);
-          updateNodeContents(map, "Distribute", {{groupNode, NodeContents{std::move(group)}}}, {});
+          mdl::updateNodeContents(map, "Distribute", {{groupNode, NodeContents{std::move(group)}}}, {});
         },
         [&](PatchNode* patchNode) {
           auto patch = patchNode->patch();
           patch.transform(transform);
-          updateNodeContents(map, "Distribute", {{patchNode, NodeContents{std::move(patch)}}}, {});
+          mdl::updateNodeContents(map, "Distribute", {{patchNode, NodeContents{std::move(patch)}}}, {});
         },
         [](WorldNode*) {},
         [](LayerNode*) {}
@@ -327,23 +329,23 @@ void AlignmentTool::alignToGrid(int axis, AlignMode mode)
       node->accept(kdl::overload(
         [&](BrushNode* brushNode) {
           auto brush = brushNode->brush();
-          brush.transform(map.worldBounds(), transform, false);
-          updateNodeContents(map, "Align to Grid", {{brushNode, NodeContents{std::move(brush)}}}, {});
+          (void)brush.transform(map.worldBounds(), transform, false);
+          mdl::updateNodeContents(map, "Align to Grid", {{brushNode, NodeContents{std::move(brush)}}}, {});
         },
         [&](EntityNode* entityNode) {
           auto entity = entityNode->entity();
-          entity.transform(transform, false);
-          updateNodeContents(map, "Align to Grid", {{entityNode, NodeContents{std::move(entity)}}}, {});
+          (void)entity.transform(transform, false);
+          mdl::updateNodeContents(map, "Align to Grid", {{entityNode, NodeContents{std::move(entity)}}}, {});
         },
         [&](GroupNode* groupNode) {
           auto group = groupNode->group();
           group.transform(transform);
-          updateNodeContents(map, "Align to Grid", {{groupNode, NodeContents{std::move(group)}}}, {});
+          mdl::updateNodeContents(map, "Align to Grid", {{groupNode, NodeContents{std::move(group)}}}, {});
         },
         [&](PatchNode* patchNode) {
           auto patch = patchNode->patch();
           patch.transform(transform);
-          updateNodeContents(map, "Align to Grid", {{patchNode, NodeContents{std::move(patch)}}}, {});
+          mdl::updateNodeContents(map, "Align to Grid", {{patchNode, NodeContents{std::move(patch)}}}, {});
         },
         [](WorldNode*) {},
         [](LayerNode*) {}
@@ -367,7 +369,7 @@ void AlignmentTool::centerAround(const vm::vec3d& center)
 
   auto transaction = Transaction{map, "Center Around Point"};
 
-  const auto selectionBounds = map.selection().selectionBounds();
+  const auto selectionBounds = *map.selectionBounds();
   const auto selectionCenter = selectionBounds.center();
   const auto translation = center - selectionCenter;
 
@@ -380,23 +382,23 @@ void AlignmentTool::centerAround(const vm::vec3d& center)
       node->accept(kdl::overload(
         [&](BrushNode* brushNode) {
           auto brush = brushNode->brush();
-          brush.transform(map.worldBounds(), transform, false);
-          updateNodeContents(map, "Center", {{brushNode, NodeContents{std::move(brush)}}}, {});
+          (void)brush.transform(map.worldBounds(), transform, false);
+          mdl::updateNodeContents(map, "Center", {{brushNode, NodeContents{std::move(brush)}}}, {});
         },
         [&](EntityNode* entityNode) {
           auto entity = entityNode->entity();
-          entity.transform(transform, false);
-          updateNodeContents(map, "Center", {{entityNode, NodeContents{std::move(entity)}}}, {});
+          (void)entity.transform(transform, false);
+          mdl::updateNodeContents(map, "Center", {{entityNode, NodeContents{std::move(entity)}}}, {});
         },
         [&](GroupNode* groupNode) {
           auto group = groupNode->group();
           group.transform(transform);
-          updateNodeContents(map, "Center", {{groupNode, NodeContents{std::move(group)}}}, {});
+          mdl::updateNodeContents(map, "Center", {{groupNode, NodeContents{std::move(group)}}}, {});
         },
         [&](PatchNode* patchNode) {
           auto patch = patchNode->patch();
           patch.transform(transform);
-          updateNodeContents(map, "Center", {{patchNode, NodeContents{std::move(patch)}}}, {});
+          mdl::updateNodeContents(map, "Center", {{patchNode, NodeContents{std::move(patch)}}}, {});
         },
         [](WorldNode*) {},
         [](LayerNode*) {}
@@ -452,23 +454,23 @@ void AlignmentTool::stackObjects(int axis, double gap)
       node->accept(kdl::overload(
         [&](BrushNode* brushNode) {
           auto brush = brushNode->brush();
-          brush.transform(map.worldBounds(), transform, false);
-          updateNodeContents(map, "Stack", {{brushNode, NodeContents{std::move(brush)}}}, {});
+          (void)brush.transform(map.worldBounds(), transform, false);
+          mdl::updateNodeContents(map, "Stack", {{brushNode, NodeContents{std::move(brush)}}}, {});
         },
         [&](EntityNode* entityNode) {
           auto entity = entityNode->entity();
-          entity.transform(transform, false);
-          updateNodeContents(map, "Stack", {{entityNode, NodeContents{std::move(entity)}}}, {});
+          (void)entity.transform(transform, false);
+          mdl::updateNodeContents(map, "Stack", {{entityNode, NodeContents{std::move(entity)}}}, {});
         },
         [&](GroupNode* groupNode) {
           auto group = groupNode->group();
           group.transform(transform);
-          updateNodeContents(map, "Stack", {{groupNode, NodeContents{std::move(group)}}}, {});
+          mdl::updateNodeContents(map, "Stack", {{groupNode, NodeContents{std::move(group)}}}, {});
         },
         [&](PatchNode* patchNode) {
           auto patch = patchNode->patch();
           patch.transform(transform);
-          updateNodeContents(map, "Stack", {{patchNode, NodeContents{std::move(patch)}}}, {});
+          mdl::updateNodeContents(map, "Stack", {{patchNode, NodeContents{std::move(patch)}}}, {});
         },
         [](WorldNode*) {},
         [](LayerNode*) {}
