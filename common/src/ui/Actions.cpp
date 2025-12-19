@@ -2032,7 +2032,7 @@ void ActionManager::createViewMenu()
     "Menu/View/Camera/Reset 2D Cameras",
     QObject::tr("Reset 2D Cameras"),
     ActionContext::Any,
-    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_U},
+    QKeySequence{Qt::CTRL | Qt::ALT | Qt::Key_R},
     [](auto& context) { context.frame().reset2dCameras(); },
     [](const auto& context) {
       return context.hasDocument() && !pref(Preferences::Link2DCameras);
