@@ -69,6 +69,8 @@ void EntityDefinitionCheckBoxList::refresh()
   const auto& groups = m_entityDefinitionManager.groups();
   for (size_t i = 0; i < groups.size(); ++i)
   {
+    if (i >= m_groupCheckBoxes.size()) return;
+
     const auto& group = groups[i];
     if (!group.definitions.empty())
     {
@@ -77,6 +79,8 @@ void EntityDefinitionCheckBoxList::refresh()
       auto mixed = false;
       for (const auto* definition : group.definitions)
       {
+        if (defIndex >= m_defCheckBoxes.size()) return;
+
         const auto hidden = m_editorContext.entityDefinitionHidden(*definition);
         mixed = mixed || (hidden != firstHidden);
         m_defCheckBoxes[defIndex++]->setChecked(!hidden);
