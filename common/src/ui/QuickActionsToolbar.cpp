@@ -43,8 +43,10 @@ QuickActionsToolbar::QuickActionsToolbar(MapFrame& frame, MapDocument& document,
   
   createActions();
   
-  connect(&m_document, &MapDocument::modificationStateDidChangeNotifier,
-          this, &QuickActionsToolbar::updateActionStates);
+  createActions();
+  
+  m_notifierConnection = m_document.modificationStateDidChangeNotifier.connect(
+      this, &QuickActionsToolbar::updateActionStates);
 }
 
 void QuickActionsToolbar::createActions()

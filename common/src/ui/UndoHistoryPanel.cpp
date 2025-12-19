@@ -19,6 +19,7 @@
 
 #include "UndoHistoryPanel.h"
 
+#include "mdl/CommandProcessor.h"
 #include "mdl/Map.h"
 #include "ui/MapDocument.h"
 
@@ -127,8 +128,8 @@ void UndoHistoryPanel::updateHistoryList()
 void UndoHistoryPanel::connectObservers()
 {
   // Connect to document notifications
-  connect(&m_document, &MapDocument::modificationStateDidChangeNotifier,
-          this, &UndoHistoryPanel::updateHistoryList);
+  m_notifierConnection = m_document.modificationStateDidChangeNotifier.connect(
+      this, &UndoHistoryPanel::updateHistoryList);
 }
 
 void UndoHistoryPanel::onUndoClicked()

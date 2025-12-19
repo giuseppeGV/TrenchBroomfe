@@ -21,6 +21,8 @@
 
 #include <QDockWidget>
 
+#include "NotifierConnection.h"
+
 class QListWidget;
 class QPushButton;
 
@@ -37,6 +39,7 @@ class UndoHistoryPanel : public QDockWidget
   Q_OBJECT
 private:
   MapDocument& m_document;
+  NotifierConnection m_notifierConnection;
   QListWidget* m_historyList = nullptr;
   QPushButton* m_undoButton = nullptr;
   QPushButton* m_redoButton = nullptr;

@@ -21,6 +21,8 @@
 
 #include <QToolBar>
 
+#include "NotifierConnection.h"
+
 class QAction;
 class QToolButton;
 
@@ -38,6 +40,7 @@ class QuickActionsToolbar : public QToolBar
 private:
   MapFrame& m_frame;
   MapDocument& m_document;
+  NotifierConnection m_notifierConnection;
 
   // CSG actions
   QAction* m_csgUnion = nullptr;
