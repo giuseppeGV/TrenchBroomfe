@@ -21,6 +21,7 @@
 
 #include "mdl/CommandProcessor.h"
 #include "mdl/Map.h"
+#include "mdl/UndoableCommand.h"
 #include "ui/MapDocument.h"
 
 #include <QHBoxLayout>
