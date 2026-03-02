@@ -69,6 +69,21 @@ private:
   // For ICO sphere
   size_t m_accuracy = 1;
 
+  // For staircase
+  size_t m_numSteps = 8;
+
+  // For arch
+  size_t m_numSlices = 8;
+  double m_arcDegrees = 180.0;
+
+  // For torus
+  size_t m_numRingSegments = 16;
+  size_t m_numTubeSegments = 8;
+
+  // For terrain grid
+  size_t m_gridRows = 4;
+  size_t m_gridCols = 4;
+
 public:
   Notifier<> parametersDidChangeNotifier;
 
@@ -89,6 +104,27 @@ public:
 
   size_t accuracy() const;
   void setAccuracy(size_t accuracy);
+
+  size_t numSteps() const;
+  void setNumSteps(size_t numSteps);
+
+  size_t numSlices() const;
+  void setNumSlices(size_t numSlices);
+
+  double arcDegrees() const;
+  void setArcDegrees(double arcDegrees);
+
+  size_t numRingSegments() const;
+  void setNumRingSegments(size_t numRingSegments);
+
+  size_t numTubeSegments() const;
+  void setNumTubeSegments(size_t numTubeSegments);
+
+  size_t gridRows() const;
+  void setGridRows(size_t gridRows);
+
+  size_t gridCols() const;
+  void setGridCols(size_t gridCols);
 };
 
 class DrawShapeToolExtension

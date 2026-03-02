@@ -1133,6 +1133,178 @@ void ActionManager::createEditMenu()
     },
   }));
 
+  // Mirror submenu
+  auto& mirrorMenu = editMenu.addMenu("Mirror");
+  mirrorMenu.addItem(addAction(Action{
+    "Menu/Edit/Mirror/Mirror X",
+    QObject::tr("Mirror X"),
+    ActionContext::Any,
+    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_X},
+    [](auto& context) { context.mapWindow().mirrorX(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canMirror();
+    },
+  }));
+  mirrorMenu.addItem(addAction(Action{
+    "Menu/Edit/Mirror/Mirror Y",
+    QObject::tr("Mirror Y"),
+    ActionContext::Any,
+    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Y},
+    [](auto& context) { context.mapWindow().mirrorY(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canMirror();
+    },
+  }));
+  mirrorMenu.addItem(addAction(Action{
+    "Menu/Edit/Mirror/Mirror Z",
+    QObject::tr("Mirror Z"),
+    ActionContext::Any,
+    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_Z},
+    [](auto& context) { context.mapWindow().mirrorZ(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canMirror();
+    },
+  }));
+
+  // Align submenu
+  auto& alignMenu = editMenu.addMenu("Align");
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Align Left",
+    QObject::tr("Align Left"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignLeft(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Align Right",
+    QObject::tr("Align Right"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignRight(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Align Top",
+    QObject::tr("Align Top"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignTop(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Align Bottom",
+    QObject::tr("Align Bottom"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignBottom(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Align Front",
+    QObject::tr("Align Front"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignFront(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Align Back",
+    QObject::tr("Align Back"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignBack(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addSeparator();
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Center Horizontally",
+    QObject::tr("Center Horizontally"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignCenterH(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Center Vertically",
+    QObject::tr("Center Vertically"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().alignCenterV(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canAlign();
+    },
+  }));
+  alignMenu.addSeparator();
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Distribute X",
+    QObject::tr("Distribute X"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().distributeX(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canDistribute();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Distribute Y",
+    QObject::tr("Distribute Y"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().distributeY(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canDistribute();
+    },
+  }));
+  alignMenu.addItem(addAction(Action{
+    "Menu/Edit/Align/Distribute Z",
+    QObject::tr("Distribute Z"),
+    ActionContext::Any,
+    QKeySequence{},
+    [](auto& context) { context.mapWindow().distributeZ(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canDistribute();
+    },
+  }));
+
+  // Array / Clone
+  editMenu.addItem(addAction(Action{
+    "Menu/Edit/Array",
+    QObject::tr("Array / Clone..."),
+    ActionContext::Any,
+    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_A},
+    [](auto& context) { context.mapWindow().showArrayDialog(); },
+    [](const auto& context) {
+      return context.hasDocument() && context.mapWindow().canShowArrayDialog();
+    },
+  }));
+
+  // Curve / Path
+  editMenu.addItem(addAction(Action{
+    "Menu/Edit/CurvePath",
+    QObject::tr("Curve / Path..."),
+    ActionContext::Any,
+    QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_P},
+    [](auto& context) { context.mapWindow().showCurvePathDialog(); },
+    [](const auto& context) {
+      return context.hasDocument();
+    },
+  }));
+
   auto& vertexEditingMenu = editMenu.addMenu("Vertices");
   vertexEditingMenu.addItem(addAction(Action{
     "Menu/Edit/Snap Vertices to Integer",

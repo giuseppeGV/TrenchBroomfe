@@ -73,6 +73,21 @@ bool csgSubtract(Map& map);
 bool csgIntersect(Map& map);
 bool csgHollow(Map& map);
 
+bool mirrorAndDuplicate(Map& map, vm::axis::type axis);
+
+bool alignSelectionMin(Map& map, vm::axis::type axis);
+bool alignSelectionMax(Map& map, vm::axis::type axis);
+bool alignSelectionCenter(Map& map, vm::axis::type axis);
+bool distributeSelection(Map& map, vm::axis::type axis);
+
+bool arrayLinear(Map& map, size_t count, const vm::vec3d& offset);
+bool arrayRadial(
+  Map& map,
+  size_t count,
+  const vm::vec3d& center,
+  vm::axis::type axis,
+  double totalAngleDegrees);
+
 bool extrudeBrushes(
   Map& map, const std::vector<vm::polygon3d>& faces, const vm::vec3d& delta);
 

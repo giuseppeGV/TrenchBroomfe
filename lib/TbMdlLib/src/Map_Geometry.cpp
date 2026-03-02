@@ -56,6 +56,7 @@
 #include "kd/string_format.h"
 #include "kd/task_manager.h"
 
+#include <algorithm>
 #include <ranges>
 
 namespace tb::mdl
@@ -915,6 +916,240 @@ bool extrudeBrushes(
                | kdl::value();
       },
       [](BezierPatch&) { return true; }));
+}
+
+bool mirrorAndDuplicate(Map& map, const vm::axis::type axis)
+{
+  const auto& selection = map.selection();
+  if (!selection.hasNodes())
+  {
+    return false;
+  }
+
+  const auto bounds = selection.computeBounds();
+  if (!bounds)
+  {
+    return false;
+  }
+
+  auto transaction = Transaction{map, "Mirror and Duplicate"};
+
+  // Duplicate the selected nodes
+  duplicateSelectedNodes(map);
+
+  // Flip the newly selected (duplicated) nodes across the center of the original bounds
+  flipSelection(map, bounds->center(), axis);
+
+  return transaction.commit();
+}
+
+bool alignSelectionMin(Map& map, const vm::axis::type axis)
+{
+  const auto& selection = map.selection();
+  if (selection.nodes.size() < 2)
+  {
+    return false;
+  }
+
+  const auto bounds = selection.computeBounds();
+  if (!bounds)
+  {
+    return false;
+  }
+
+  const auto targetMin = bounds->min[size_t(axis)];
+
+  auto transaction = Transaction{map, "Align to Minimum"};
+
+  for (auto* node : selection.nodes)
+  {
+    const auto nodeBounds = node->logicalBounds();
+    auto delta = vm::vec3d{0, 0, 0};
+    delta[size_t(axis)] = targetMin - nodeBounds.min[size_t(axis)];
+    if (!vm::is_zero(delta, vm::Cd::almost_zero()))
+    {
+      auto nodes = std::vector<Node*>{node};
+      transformSelection(
+        map,
+        "Align to Minimum",
+        vm::translation_matrix(delta));
+    }
+  }
+
+  return transaction.commit();
+}
+
+bool alignSelectionMax(Map& map, const vm::axis::type axis)
+{
+  const auto& selection = map.selection();
+  if (selection.nodes.size() < 2)
+  {
+    return false;
+  }
+
+  const auto bounds = selection.computeBounds();
+  if (!bounds)
+  {
+    return false;
+  }
+
+  const auto targetMax = bounds->max[size_t(axis)];
+
+  auto transaction = Transaction{map, "Align to Maximum"};
+
+  for (auto* node : selection.nodes)
+  {
+    const auto nodeBounds = node->logicalBounds();
+    auto delta = vm::vec3d{0, 0, 0};
+    delta[size_t(axis)] = targetMax - nodeBounds.max[size_t(axis)];
+    if (!vm::is_zero(delta, vm::Cd::almost_zero()))
+    {
+      transformSelection(
+        map,
+        "Align to Maximum",
+        vm::translation_matrix(delta));
+    }
+  }
+
+  return transaction.commit();
+}
+
+bool alignSelectionCenter(Map& map, const vm::axis::type axis)
+{
+  const auto& selection = map.selection();
+  if (selection.nodes.size() < 2)
+  {
+    return false;
+  }
+
+  const auto bounds = selection.computeBounds();
+  if (!bounds)
+  {
+    return false;
+  }
+
+  const auto targetCenter = bounds->center()[size_t(axis)];
+
+  auto transaction = Transaction{map, "Align to Center"};
+
+  for (auto* node : selection.nodes)
+  {
+    const auto nodeBounds = node->logicalBounds();
+    auto delta = vm::vec3d{0, 0, 0};
+    delta[size_t(axis)] = targetCenter - nodeBounds.center()[size_t(axis)];
+    if (!vm::is_zero(delta, vm::Cd::almost_zero()))
+    {
+      transformSelection(
+        map,
+        "Align to Center",
+        vm::translation_matrix(delta));
+    }
+  }
+
+  return transaction.commit();
+}
+
+bool distributeSelection(Map& map, const vm::axis::type axis)
+{
+  const auto& selection = map.selection();
+  if (selection.nodes.size() < 3)
+  {
+    return false;
+  }
+
+  const auto bounds = selection.computeBounds();
+  if (!bounds)
+  {
+    return false;
+  }
+
+  // Sort nodes by their position along the axis
+  auto sortedNodes = selection.nodes;
+  std::sort(sortedNodes.begin(), sortedNodes.end(), [&](auto* a, auto* b) {
+    return a->logicalBounds().center()[size_t(axis)]
+           < b->logicalBounds().center()[size_t(axis)];
+  });
+
+  const auto first = sortedNodes.front()->logicalBounds().center()[size_t(axis)];
+  const auto last = sortedNodes.back()->logicalBounds().center()[size_t(axis)];
+  const auto step = (last - first) / double(sortedNodes.size() - 1);
+
+  auto transaction = Transaction{map, "Distribute"};
+
+  for (size_t i = 1; i + 1 < sortedNodes.size(); ++i)
+  {
+    const auto target = first + double(i) * step;
+    const auto current = sortedNodes[i]->logicalBounds().center()[size_t(axis)];
+    auto delta = vm::vec3d{0, 0, 0};
+    delta[size_t(axis)] = target - current;
+    if (!vm::is_zero(delta, vm::Cd::almost_zero()))
+    {
+      transformSelection(
+        map,
+        "Distribute",
+        vm::translation_matrix(delta));
+    }
+  }
+
+  return transaction.commit();
+}
+
+bool arrayLinear(Map& map, const size_t count, const vm::vec3d& offset)
+{
+  if (count == 0)
+  {
+    return false;
+  }
+
+  const auto& selection = map.selection();
+  if (!selection.hasNodes())
+  {
+    return false;
+  }
+
+  auto transaction = Transaction{map, "Linear Array"};
+
+  for (size_t i = 0; i < count; ++i)
+  {
+    duplicateSelectedNodes(map);
+    const auto delta = offset; // Each duplicate is offset from the previous
+    translateSelection(map, delta);
+  }
+
+  return transaction.commit();
+}
+
+bool arrayRadial(
+  Map& map,
+  const size_t count,
+  const vm::vec3d& center,
+  const vm::axis::type axis,
+  const double totalAngleDegrees)
+{
+  if (count == 0)
+  {
+    return false;
+  }
+
+  const auto& selection = map.selection();
+  if (!selection.hasNodes())
+  {
+    return false;
+  }
+
+  const auto angleStep = (totalAngleDegrees * vm::Cd::pi() / 180.0) / double(count);
+  const auto axisVec = vm::vec3d::axis(axis);
+
+  auto transaction = Transaction{map, "Radial Array"};
+
+  for (size_t i = 0; i < count; ++i)
+  {
+    duplicateSelectedNodes(map);
+    const auto angle = angleStep; // Each duplicate is rotated relative to the previous
+    rotateSelection(map, center, axisVec, angle);
+  }
+
+  return transaction.commit();
 }
 
 } // namespace tb::mdl

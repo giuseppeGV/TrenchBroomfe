@@ -505,7 +505,454 @@ std::vector<std::unique_ptr<DrawShapeToolExtension>> createDrawShapeToolExtensio
   result.push_back(std::make_unique<DrawShapeToolConeExtension>(document));
   result.push_back(std::make_unique<DrawShapeToolUVSphereExtension>(document));
   result.push_back(std::make_unique<DrawShapeToolIcoSphereExtension>(document));
+  result.push_back(std::make_unique<DrawShapeToolWedgeExtension>(document));
+  result.push_back(std::make_unique<DrawShapeToolStaircaseExtension>(document));
+  result.push_back(std::make_unique<DrawShapeToolArchExtension>(document));
+  result.push_back(std::make_unique<DrawShapeToolPipeExtension>(document));
+  result.push_back(std::make_unique<DrawShapeToolTorusExtension>(document));
+  result.push_back(std::make_unique<DrawShapeToolTerrainGridExtension>(document));
   return result;
+}
+
+// --- Wedge Extension ---
+
+DrawShapeToolWedgeShapeExtensionPage::DrawShapeToolWedgeShapeExtensionPage(
+  MapDocument& document, ShapeParameters& parameters, QWidget* parent)
+  : DrawShapeToolAxisAlignedShapeExtensionPage{parameters, parent}
+  , m_parameters{parameters}
+{
+  addApplyButton(document);
+}
+
+DrawShapeToolWedgeExtension::DrawShapeToolWedgeExtension(MapDocument& document)
+  : DrawShapeToolExtension{document}
+{
+}
+
+const std::string& DrawShapeToolWedgeExtension::name() const
+{
+  static const auto name = std::string{"Wedge"};
+  return name;
+}
+
+const std::filesystem::path& DrawShapeToolWedgeExtension::iconPath() const
+{
+  static const auto path = std::filesystem::path{"ShapeTool_Wedge.svg"};
+  return path;
+}
+
+DrawShapeToolExtensionPage* DrawShapeToolWedgeExtension::createToolPage(
+  ShapeParameters& parameters, QWidget* parent)
+{
+  return new DrawShapeToolWedgeShapeExtensionPage{m_document, parameters, parent};
+}
+
+Result<std::vector<mdl::Brush>> DrawShapeToolWedgeExtension::createBrushes(
+  const vm::bbox3d& bounds, const ShapeParameters& parameters) const
+{
+  auto& map = m_document.map();
+
+  const auto builder = mdl::BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+
+  return builder.createWedge(bounds, parameters.axis(), map.currentMaterialName())
+    .transform([](auto brush) { return std::vector{std::move(brush)}; });
+}
+
+// --- Staircase Extension ---
+
+DrawShapeToolStaircaseShapeExtensionPage::DrawShapeToolStaircaseShapeExtensionPage(
+  MapDocument& document, ShapeParameters& parameters, QWidget* parent)
+  : DrawShapeToolAxisAlignedShapeExtensionPage{parameters, parent}
+  , m_parameters{parameters}
+{
+  auto* numStepsLabel = new QLabel{tr("Number of Steps: ")};
+  auto* numStepsBox = new QSpinBox{};
+  numStepsBox->setRange(1, 128);
+
+  connect(
+    numStepsBox,
+    QOverload<int>::of(&QSpinBox::valueChanged),
+    this,
+    [&](const auto numSteps) { m_parameters.setNumSteps(size_t(numSteps)); });
+
+  addWidget(numStepsLabel);
+  addWidget(numStepsBox);
+  addApplyButton(document);
+
+  const auto updateWidgets = [=, this]() {
+    numStepsBox->setValue(int(m_parameters.numSteps()));
+  };
+  updateWidgets();
+
+  m_notifierConnection +=
+    m_parameters.parametersDidChangeNotifier.connect(std::move(updateWidgets));
+}
+
+DrawShapeToolStaircaseExtension::DrawShapeToolStaircaseExtension(MapDocument& document)
+  : DrawShapeToolExtension{document}
+{
+}
+
+const std::string& DrawShapeToolStaircaseExtension::name() const
+{
+  static const auto name = std::string{"Staircase"};
+  return name;
+}
+
+const std::filesystem::path& DrawShapeToolStaircaseExtension::iconPath() const
+{
+  static const auto path = std::filesystem::path{"ShapeTool_Staircase.svg"};
+  return path;
+}
+
+DrawShapeToolExtensionPage* DrawShapeToolStaircaseExtension::createToolPage(
+  ShapeParameters& parameters, QWidget* parent)
+{
+  return new DrawShapeToolStaircaseShapeExtensionPage{m_document, parameters, parent};
+}
+
+Result<std::vector<mdl::Brush>> DrawShapeToolStaircaseExtension::createBrushes(
+  const vm::bbox3d& bounds, const ShapeParameters& parameters) const
+{
+  auto& map = m_document.map();
+
+  const auto builder = mdl::BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+  return builder.createStaircase(
+    bounds, parameters.numSteps(), parameters.axis(), map.currentMaterialName());
+}
+
+// --- Arch Extension ---
+
+DrawShapeToolArchShapeExtensionPage::DrawShapeToolArchShapeExtensionPage(
+  MapDocument& document, ShapeParameters& parameters, QWidget* parent)
+  : DrawShapeToolCircularShapeExtensionPage{parameters, parent}
+  , m_parameters{parameters}
+{
+  auto* numSlicesLabel = new QLabel{tr("Slices: ")};
+  auto* numSlicesBox = new QSpinBox{};
+  numSlicesBox->setRange(1, 64);
+
+  auto* arcLabel = new QLabel{tr("Arc (\u00B0): ")};
+  auto* arcBox = new QDoubleSpinBox{};
+  arcBox->setRange(1.0, 360.0);
+  arcBox->setSingleStep(5.0);
+
+  auto* thicknessLabel = new QLabel{tr("Thickness: ")};
+  auto* thicknessBox = new QDoubleSpinBox{};
+  thicknessBox->setRange(1.0, 1024.0);
+
+  connect(
+    numSlicesBox,
+    QOverload<int>::of(&QSpinBox::valueChanged),
+    this,
+    [&](const auto n) { m_parameters.setNumSlices(size_t(n)); });
+  connect(
+    arcBox,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    [&](const auto a) { m_parameters.setArcDegrees(a); });
+  connect(
+    thicknessBox,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    [&](const auto t) { m_parameters.setThickness(t); });
+
+  addWidget(numSlicesLabel);
+  addWidget(numSlicesBox);
+  addWidget(arcLabel);
+  addWidget(arcBox);
+  addWidget(thicknessLabel);
+  addWidget(thicknessBox);
+  addApplyButton(document);
+
+  const auto updateWidgets = [=, this]() {
+    numSlicesBox->setValue(int(m_parameters.numSlices()));
+    arcBox->setValue(m_parameters.arcDegrees());
+    thicknessBox->setValue(m_parameters.thickness());
+  };
+  updateWidgets();
+
+  m_notifierConnection +=
+    m_parameters.parametersDidChangeNotifier.connect(std::move(updateWidgets));
+}
+
+DrawShapeToolArchExtension::DrawShapeToolArchExtension(MapDocument& document)
+  : DrawShapeToolExtension{document}
+{
+}
+
+const std::string& DrawShapeToolArchExtension::name() const
+{
+  static const auto name = std::string{"Arch"};
+  return name;
+}
+
+const std::filesystem::path& DrawShapeToolArchExtension::iconPath() const
+{
+  static const auto path = std::filesystem::path{"ShapeTool_Arch.svg"};
+  return path;
+}
+
+DrawShapeToolExtensionPage* DrawShapeToolArchExtension::createToolPage(
+  ShapeParameters& parameters, QWidget* parent)
+{
+  return new DrawShapeToolArchShapeExtensionPage{m_document, parameters, parent};
+}
+
+Result<std::vector<mdl::Brush>> DrawShapeToolArchExtension::createBrushes(
+  const vm::bbox3d& bounds, const ShapeParameters& parameters) const
+{
+  auto& map = m_document.map();
+
+  const auto builder = mdl::BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+  return builder.createArch(
+    bounds,
+    parameters.numSlices(),
+    parameters.arcDegrees(),
+    parameters.thickness(),
+    parameters.circleShape(),
+    parameters.axis(),
+    map.currentMaterialName());
+}
+
+// --- Pipe Extension ---
+
+DrawShapeToolPipeShapeExtensionPage::DrawShapeToolPipeShapeExtensionPage(
+  MapDocument& document, ShapeParameters& parameters, QWidget* parent)
+  : DrawShapeToolCircularShapeExtensionPage{parameters, parent}
+  , m_parameters{parameters}
+{
+  auto* thicknessLabel = new QLabel{tr("Thickness: ")};
+  auto* thicknessBox = new QDoubleSpinBox{};
+  thicknessBox->setRange(1, 128);
+
+  connect(
+    thicknessBox,
+    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+    this,
+    [&](const auto thickness) { m_parameters.setThickness(thickness); });
+
+  addWidget(thicknessLabel);
+  addWidget(thicknessBox);
+  addApplyButton(document);
+
+  const auto updateWidgets = [=, this]() {
+    thicknessBox->setValue(m_parameters.thickness());
+  };
+  updateWidgets();
+
+  m_notifierConnection +=
+    m_parameters.parametersDidChangeNotifier.connect(std::move(updateWidgets));
+}
+
+DrawShapeToolPipeExtension::DrawShapeToolPipeExtension(MapDocument& document)
+  : DrawShapeToolExtension{document}
+{
+}
+
+const std::string& DrawShapeToolPipeExtension::name() const
+{
+  static const auto name = std::string{"Pipe"};
+  return name;
+}
+
+const std::filesystem::path& DrawShapeToolPipeExtension::iconPath() const
+{
+  static const auto path = std::filesystem::path{"ShapeTool_Pipe.svg"};
+  return path;
+}
+
+DrawShapeToolExtensionPage* DrawShapeToolPipeExtension::createToolPage(
+  ShapeParameters& parameters, QWidget* parent)
+{
+  return new DrawShapeToolPipeShapeExtensionPage{m_document, parameters, parent};
+}
+
+Result<std::vector<mdl::Brush>> DrawShapeToolPipeExtension::createBrushes(
+  const vm::bbox3d& bounds, const ShapeParameters& parameters) const
+{
+  auto& map = m_document.map();
+
+  const auto builder = mdl::BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+  return builder.createPipe(
+    bounds,
+    parameters.thickness(),
+    parameters.circleShape(),
+    parameters.axis(),
+    map.currentMaterialName());
+}
+
+// --- Torus Extension ---
+
+DrawShapeToolTorusShapeExtensionPage::DrawShapeToolTorusShapeExtensionPage(
+  MapDocument& document, ShapeParameters& parameters, QWidget* parent)
+  : DrawShapeToolAxisAlignedShapeExtensionPage{parameters, parent}
+  , m_parameters{parameters}
+{
+  auto* ringSegLabel = new QLabel{tr("Ring Segments: ")};
+  auto* ringSegBox = new QSpinBox{};
+  ringSegBox->setRange(3, 64);
+
+  auto* tubeSegLabel = new QLabel{tr("Tube Segments: ")};
+  auto* tubeSegBox = new QSpinBox{};
+  tubeSegBox->setRange(3, 32);
+
+  connect(
+    ringSegBox,
+    QOverload<int>::of(&QSpinBox::valueChanged),
+    this,
+    [&](const auto n) { m_parameters.setNumRingSegments(size_t(n)); });
+  connect(
+    tubeSegBox,
+    QOverload<int>::of(&QSpinBox::valueChanged),
+    this,
+    [&](const auto n) { m_parameters.setNumTubeSegments(size_t(n)); });
+
+  addWidget(ringSegLabel);
+  addWidget(ringSegBox);
+  addWidget(tubeSegLabel);
+  addWidget(tubeSegBox);
+  addApplyButton(document);
+
+  const auto updateWidgets = [=, this]() {
+    ringSegBox->setValue(int(m_parameters.numRingSegments()));
+    tubeSegBox->setValue(int(m_parameters.numTubeSegments()));
+  };
+  updateWidgets();
+
+  m_notifierConnection +=
+    m_parameters.parametersDidChangeNotifier.connect(std::move(updateWidgets));
+}
+
+DrawShapeToolTorusExtension::DrawShapeToolTorusExtension(MapDocument& document)
+  : DrawShapeToolExtension{document}
+{
+}
+
+const std::string& DrawShapeToolTorusExtension::name() const
+{
+  static const auto name = std::string{"Torus"};
+  return name;
+}
+
+const std::filesystem::path& DrawShapeToolTorusExtension::iconPath() const
+{
+  static const auto path = std::filesystem::path{"ShapeTool_Torus.svg"};
+  return path;
+}
+
+DrawShapeToolExtensionPage* DrawShapeToolTorusExtension::createToolPage(
+  ShapeParameters& parameters, QWidget* parent)
+{
+  return new DrawShapeToolTorusShapeExtensionPage{m_document, parameters, parent};
+}
+
+Result<std::vector<mdl::Brush>> DrawShapeToolTorusExtension::createBrushes(
+  const vm::bbox3d& bounds, const ShapeParameters& parameters) const
+{
+  auto& map = m_document.map();
+
+  const auto builder = mdl::BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+  return builder.createTorus(
+    bounds,
+    parameters.numRingSegments(),
+    parameters.numTubeSegments(),
+    parameters.axis(),
+    map.currentMaterialName());
+}
+
+// --- Terrain Grid Extension ---
+
+DrawShapeToolTerrainGridShapeExtensionPage::DrawShapeToolTerrainGridShapeExtensionPage(
+  MapDocument& document, ShapeParameters& parameters, QWidget* parent)
+  : DrawShapeToolExtensionPage{parent}
+  , m_parameters{parameters}
+{
+  auto* rowsLabel = new QLabel{tr("Rows: ")};
+  auto* rowsBox = new QSpinBox{};
+  rowsBox->setRange(1, 64);
+
+  auto* colsLabel = new QLabel{tr("Columns: ")};
+  auto* colsBox = new QSpinBox{};
+  colsBox->setRange(1, 64);
+
+  connect(
+    rowsBox,
+    QOverload<int>::of(&QSpinBox::valueChanged),
+    this,
+    [&](const auto n) { m_parameters.setGridRows(size_t(n)); });
+  connect(
+    colsBox,
+    QOverload<int>::of(&QSpinBox::valueChanged),
+    this,
+    [&](const auto n) { m_parameters.setGridCols(size_t(n)); });
+
+  addWidget(rowsLabel);
+  addWidget(rowsBox);
+  addWidget(colsLabel);
+  addWidget(colsBox);
+  addApplyButton(document);
+
+  const auto updateWidgets = [=, this]() {
+    rowsBox->setValue(int(m_parameters.gridRows()));
+    colsBox->setValue(int(m_parameters.gridCols()));
+  };
+  updateWidgets();
+
+  m_notifierConnection +=
+    m_parameters.parametersDidChangeNotifier.connect(std::move(updateWidgets));
+}
+
+DrawShapeToolTerrainGridExtension::DrawShapeToolTerrainGridExtension(
+  MapDocument& document)
+  : DrawShapeToolExtension{document}
+{
+}
+
+const std::string& DrawShapeToolTerrainGridExtension::name() const
+{
+  static const auto name = std::string{"Terrain Grid"};
+  return name;
+}
+
+const std::filesystem::path& DrawShapeToolTerrainGridExtension::iconPath() const
+{
+  static const auto path = std::filesystem::path{"ShapeTool_TerrainGrid.svg"};
+  return path;
+}
+
+DrawShapeToolExtensionPage* DrawShapeToolTerrainGridExtension::createToolPage(
+  ShapeParameters& parameters, QWidget* parent)
+{
+  return new DrawShapeToolTerrainGridShapeExtensionPage{m_document, parameters, parent};
+}
+
+Result<std::vector<mdl::Brush>> DrawShapeToolTerrainGridExtension::createBrushes(
+  const vm::bbox3d& bounds, const ShapeParameters& parameters) const
+{
+  auto& map = m_document.map();
+
+  const auto builder = mdl::BrushBuilder{
+    map.worldNode().mapFormat(),
+    map.worldBounds(),
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
+  return builder.createTerrainGrid(
+    bounds, parameters.gridRows(), parameters.gridCols(), map.currentMaterialName());
 }
 
 } // namespace tb::ui

@@ -117,6 +117,46 @@ public:
   Result<Brush> createIcoSphere(
     const vm::bbox3d& bounds, size_t iterations, const std::string& textureName) const;
 
+  Result<Brush> createWedge(
+    const vm::bbox3d& bounds,
+    vm::axis::type axis,
+    const std::string& materialName) const;
+
+  Result<std::vector<Brush>> createStaircase(
+    const vm::bbox3d& bounds,
+    size_t numSteps,
+    vm::axis::type axis,
+    const std::string& materialName) const;
+
+  Result<std::vector<Brush>> createArch(
+    const vm::bbox3d& bounds,
+    size_t numSlices,
+    double arcDegrees,
+    double thickness,
+    const CircleShape& circleShape,
+    vm::axis::type axis,
+    const std::string& materialName) const;
+
+  Result<std::vector<Brush>> createPipe(
+    const vm::bbox3d& bounds,
+    double thickness,
+    const CircleShape& circleShape,
+    vm::axis::type axis,
+    const std::string& materialName) const;
+
+  Result<std::vector<Brush>> createTorus(
+    const vm::bbox3d& bounds,
+    size_t numRingSegments,
+    size_t numTubeSegments,
+    vm::axis::type axis,
+    const std::string& materialName) const;
+
+  Result<std::vector<Brush>> createTerrainGrid(
+    const vm::bbox3d& bounds,
+    size_t rows,
+    size_t cols,
+    const std::string& materialName) const;
+
   Result<Brush> createBrush(
     const std::vector<vm::vec3d>& points, const std::string& materialName) const;
   Result<Brush> createBrush(

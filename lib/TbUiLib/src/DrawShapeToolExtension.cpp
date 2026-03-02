@@ -154,6 +154,104 @@ void ShapeParameters::setAccuracy(const size_t accuracy)
   }
 }
 
+size_t ShapeParameters::numSteps() const
+{
+  return m_numSteps;
+}
+
+void ShapeParameters::setNumSteps(const size_t numSteps)
+{
+  if (numSteps != m_numSteps)
+  {
+    m_numSteps = numSteps;
+    parametersDidChangeNotifier();
+  }
+}
+
+size_t ShapeParameters::numSlices() const
+{
+  return m_numSlices;
+}
+
+void ShapeParameters::setNumSlices(const size_t numSlices)
+{
+  if (numSlices != m_numSlices)
+  {
+    m_numSlices = numSlices;
+    parametersDidChangeNotifier();
+  }
+}
+
+double ShapeParameters::arcDegrees() const
+{
+  return m_arcDegrees;
+}
+
+void ShapeParameters::setArcDegrees(const double arcDegrees)
+{
+  if (arcDegrees != m_arcDegrees)
+  {
+    m_arcDegrees = arcDegrees;
+    parametersDidChangeNotifier();
+  }
+}
+
+size_t ShapeParameters::numRingSegments() const
+{
+  return m_numRingSegments;
+}
+
+void ShapeParameters::setNumRingSegments(const size_t numRingSegments)
+{
+  if (numRingSegments != m_numRingSegments)
+  {
+    m_numRingSegments = numRingSegments;
+    parametersDidChangeNotifier();
+  }
+}
+
+size_t ShapeParameters::numTubeSegments() const
+{
+  return m_numTubeSegments;
+}
+
+void ShapeParameters::setNumTubeSegments(const size_t numTubeSegments)
+{
+  if (numTubeSegments != m_numTubeSegments)
+  {
+    m_numTubeSegments = numTubeSegments;
+    parametersDidChangeNotifier();
+  }
+}
+
+size_t ShapeParameters::gridRows() const
+{
+  return m_gridRows;
+}
+
+void ShapeParameters::setGridRows(const size_t gridRows)
+{
+  if (gridRows != m_gridRows)
+  {
+    m_gridRows = gridRows;
+    parametersDidChangeNotifier();
+  }
+}
+
+size_t ShapeParameters::gridCols() const
+{
+  return m_gridCols;
+}
+
+void ShapeParameters::setGridCols(const size_t gridCols)
+{
+  if (gridCols != m_gridCols)
+  {
+    m_gridCols = gridCols;
+    parametersDidChangeNotifier();
+  }
+}
+
 DrawShapeToolExtension::DrawShapeToolExtension(MapDocument& document)
   : m_document{document}
 {

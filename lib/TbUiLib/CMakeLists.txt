@@ -14,6 +14,7 @@ target_sources(TbUiLib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Animation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AppController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AppInfoPanel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ArrayDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AssembleBrushTool.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AssembleBrushToolController3D.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AutoSizeTableRows.cpp
@@ -53,6 +54,7 @@ target_sources(TbUiLib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CrashReporter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CreateBrushesToolBase.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CreateEntityTool.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CurvePathDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CreateEntityToolController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CurrentGameIndicator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CyclingMapView.cpp

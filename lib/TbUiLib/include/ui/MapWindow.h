@@ -324,6 +324,30 @@ public:
   void csgIntersect();
   bool canDoCsgIntersect() const;
 
+  void mirrorX();
+  void mirrorY();
+  void mirrorZ();
+  bool canMirror() const;
+
+  void alignLeft();
+  void alignRight();
+  void alignTop();
+  void alignBottom();
+  void alignFront();
+  void alignBack();
+  void alignCenterH();
+  void alignCenterV();
+  void distributeX();
+  void distributeY();
+  void distributeZ();
+  bool canAlign() const;
+  bool canDistribute() const;
+
+  void showArrayDialog();
+  bool canShowArrayDialog() const;
+
+  void showCurvePathDialog();
+
   void snapVerticesToInteger();
   void snapVerticesToGrid();
   bool canSnapVertices() const;

@@ -724,6 +724,312 @@ Result<Brush> BrushBuilder::createIcoSphere(
            });
 }
 
+Result<Brush> BrushBuilder::createWedge(
+  const vm::bbox3d& bounds,
+  const vm::axis::type axis,
+  const std::string& materialName) const
+{
+  // Build a wedge (triangular prism / ramp) in XY space, then rotate to target axis.
+  // The slope runs from bottom-front to top-back along the Y axis (depth).
+  const auto toXY = vm::rotation_matrix(vm::vec3d::axis(axis), vm::vec3d{0, 0, 1});
+  const auto fromXY = vm::rotation_matrix(vm::vec3d{0, 0, 1}, vm::vec3d::axis(axis));
+  const auto b = bounds.transform(toXY);
+
+  // 6 vertices forming a triangular prism (wedge):
+  // Bottom face is a full rectangle, top face collapses to an edge at the back.
+  const auto vertices = std::vector<vm::vec3d>{
+    // Bottom 4 corners
+    {b.min.x(), b.min.y(), b.min.z()},
+    {b.max.x(), b.min.y(), b.min.z()},
+    {b.max.x(), b.max.y(), b.min.z()},
+    {b.min.x(), b.max.y(), b.min.z()},
+    // Top 2 corners (back edge only - forms the ramp slope)
+    {b.min.x(), b.max.y(), b.max.z()},
+    {b.max.x(), b.max.y(), b.max.z()},
+  };
+
+  return createBrush(fromXY * vertices, materialName);
+}
+
+Result<std::vector<Brush>> BrushBuilder::createStaircase(
+  const vm::bbox3d& bounds,
+  const size_t numSteps,
+  const vm::axis::type axis,
+  const std::string& materialName) const
+{
+  if (numSteps == 0)
+  {
+    return Error{"Number of steps must be > 0"};
+  }
+
+  const auto toXY = vm::rotation_matrix(vm::vec3d::axis(axis), vm::vec3d{0, 0, 1});
+  const auto fromXY = vm::rotation_matrix(vm::vec3d{0, 0, 1}, vm::vec3d::axis(axis));
+  const auto b = bounds.transform(toXY);
+
+  const auto stepDepth = b.size().y() / double(numSteps);
+  const auto stepHeight = b.size().z() / double(numSteps);
+
+  auto brushes = std::vector<Result<Brush>>{};
+  brushes.reserve(numSteps);
+
+  for (size_t i = 0; i < numSteps; ++i)
+  {
+    const auto stepMin = vm::vec3d{
+      b.min.x(),
+      b.min.y() + double(i) * stepDepth,
+      b.min.z(),
+    };
+    const auto stepMax = vm::vec3d{
+      b.max.x(),
+      b.min.y() + double(i + 1) * stepDepth,
+      b.min.z() + double(i + 1) * stepHeight,
+    };
+    const auto stepBounds = vm::bbox3d{stepMin, stepMax};
+
+    // Transform back and create cuboid
+    const auto transformedMin = fromXY * stepBounds.min;
+    const auto transformedMax = fromXY * stepBounds.max;
+    brushes.push_back(createCuboid(
+      vm::bbox3d{vm::min(transformedMin, transformedMax),
+                 vm::max(transformedMin, transformedMax)},
+      materialName));
+  }
+
+  return brushes | kdl::fold;
+}
+
+Result<std::vector<Brush>> BrushBuilder::createArch(
+  const vm::bbox3d& bounds,
+  const size_t numSlices,
+  const double arcDegrees,
+  const double thickness,
+  const CircleShape& circleShape,
+  const vm::axis::type axis,
+  const std::string& materialName) const
+{
+  if (numSlices < 1)
+  {
+    return Error{"Number of arch slices must be >= 1"};
+  }
+  if (arcDegrees <= 0.0 || arcDegrees > 360.0)
+  {
+    return Error{"Arc degrees must be in range (0, 360]"};
+  }
+
+  const auto toXY = vm::rotation_matrix(vm::vec3d::axis(axis), vm::vec3d{0, 0, 1});
+  const auto fromXY = vm::rotation_matrix(vm::vec3d{0, 0, 1}, vm::vec3d::axis(axis));
+  const auto b = bounds.transform(toXY);
+
+  const auto center = b.xy().center();
+  const auto outerRadiusX = b.size().x() / 2.0;
+  const auto outerRadiusY = b.size().y() / 2.0;
+  const auto innerRadiusX = outerRadiusX - thickness;
+  const auto innerRadiusY = outerRadiusY - thickness;
+
+  if (innerRadiusX <= 0.0 || innerRadiusY <= 0.0)
+  {
+    return Error{"Arch thickness is too large for the bounding box"};
+  }
+
+  const auto arcRadians = arcDegrees * vm::Cd::pi() / 180.0;
+  const auto startAngle = vm::Cd::half_pi(); // Start from the top
+  const auto angleStep = arcRadians / double(numSlices);
+  const auto halfHeight = b.size().z() / 2.0;
+
+  auto brushes = std::vector<Result<Brush>>{};
+  brushes.reserve(numSlices);
+
+  for (size_t i = 0; i < numSlices; ++i)
+  {
+    const auto a0 = startAngle - double(i) * angleStep;
+    const auto a1 = startAngle - double(i + 1) * angleStep;
+
+    const auto outerP0 =
+      vm::vec2d{center.x() + outerRadiusX * std::cos(a0),
+                center.y() + outerRadiusY * std::sin(a0)};
+    const auto outerP1 =
+      vm::vec2d{center.x() + outerRadiusX * std::cos(a1),
+                center.y() + outerRadiusY * std::sin(a1)};
+    const auto innerP0 =
+      vm::vec2d{center.x() + innerRadiusX * std::cos(a0),
+                center.y() + innerRadiusY * std::sin(a0)};
+    const auto innerP1 =
+      vm::vec2d{center.x() + innerRadiusX * std::cos(a1),
+                center.y() + innerRadiusY * std::sin(a1)};
+
+    const auto vertices = std::vector<vm::vec3d>{
+      {outerP0, b.min.z()},
+      {outerP0, b.max.z()},
+      {outerP1, b.min.z()},
+      {outerP1, b.max.z()},
+      {innerP0, b.min.z()},
+      {innerP0, b.max.z()},
+      {innerP1, b.min.z()},
+      {innerP1, b.max.z()},
+    };
+
+    brushes.push_back(createBrush(fromXY * vertices, materialName));
+  }
+
+  return brushes | kdl::fold;
+}
+
+Result<std::vector<Brush>> BrushBuilder::createPipe(
+  const vm::bbox3d& bounds,
+  const double thickness,
+  const CircleShape& circleShape,
+  const vm::axis::type axis,
+  const std::string& materialName) const
+{
+  // A pipe is essentially a hollow cylinder (wall segments only, no caps).
+  // Reuse the hollow cylinder logic which already produces individual wall segments.
+  return createHollowCylinder(bounds, thickness, circleShape, axis, materialName);
+}
+
+Result<std::vector<Brush>> BrushBuilder::createTorus(
+  const vm::bbox3d& bounds,
+  const size_t numRingSegments,
+  const size_t numTubeSegments,
+  const vm::axis::type axis,
+  const std::string& materialName) const
+{
+  if (numRingSegments < 3 || numTubeSegments < 3)
+  {
+    return Error{"Torus requires at least 3 ring segments and 3 tube segments"};
+  }
+
+  const auto toXY = vm::rotation_matrix(vm::vec3d::axis(axis), vm::vec3d{0, 0, 1});
+  const auto fromXY = vm::rotation_matrix(vm::vec3d{0, 0, 1}, vm::vec3d::axis(axis));
+  const auto b = bounds.transform(toXY);
+
+  const auto center = b.center();
+  // Major radius = distance from torus center to tube center
+  // Minor radius = tube radius
+  const auto outerRadiusXY =
+    vm::vec2d{b.size().x() / 2.0, b.size().y() / 2.0};
+  const auto minorRadius = b.size().z() / 2.0;
+  const auto majorRadiusXY =
+    vm::vec2d{outerRadiusXY.x() - minorRadius, outerRadiusXY.y() - minorRadius};
+
+  if (majorRadiusXY.x() <= 0.0 || majorRadiusXY.y() <= 0.0)
+  {
+    return Error{"Torus bounds are too small for the tube radius"};
+  }
+
+  // Generate tube cross-section rings at each ring segment position
+  auto ringCrossSections = std::vector<std::vector<vm::vec3d>>{};
+  ringCrossSections.reserve(numRingSegments);
+
+  for (size_t i = 0; i < numRingSegments; ++i)
+  {
+    const auto ringAngle = double(i) * vm::Cd::two_pi() / double(numRingSegments);
+    const auto cosR = std::cos(ringAngle);
+    const auto sinR = std::sin(ringAngle);
+
+    // Center of tube at this ring position
+    const auto tubeCenter = vm::vec3d{
+      center.x() + majorRadiusXY.x() * cosR,
+      center.y() + majorRadiusXY.y() * sinR,
+      center.z(),
+    };
+
+    // Direction from torus center outward (in XY plane)
+    const auto outDir = vm::vec3d{cosR, sinR, 0.0};
+
+    auto crossSection = std::vector<vm::vec3d>{};
+    crossSection.reserve(numTubeSegments);
+
+    for (size_t j = 0; j < numTubeSegments; ++j)
+    {
+      const auto tubeAngle = double(j) * vm::Cd::two_pi() / double(numTubeSegments);
+      const auto cosT = std::cos(tubeAngle);
+      const auto sinT = std::sin(tubeAngle);
+
+      // Point on tube cross-section: outward component + up component
+      crossSection.push_back(
+        tubeCenter + outDir * (minorRadius * cosT)
+        + vm::vec3d{0, 0, minorRadius * sinT});
+    }
+
+    ringCrossSections.push_back(std::move(crossSection));
+  }
+
+  // Generate brushes: one brush per "quad" connecting adjacent ring cross-sections
+  auto brushes = std::vector<Result<Brush>>{};
+  brushes.reserve(numRingSegments * numTubeSegments);
+
+  for (size_t i = 0; i < numRingSegments; ++i)
+  {
+    const auto nextI = (i + 1) % numRingSegments;
+
+    for (size_t j = 0; j < numTubeSegments; ++j)
+    {
+      const auto nextJ = (j + 1) % numTubeSegments;
+
+      const auto vertices = std::vector<vm::vec3d>{
+        ringCrossSections[i][j],
+        ringCrossSections[i][nextJ],
+        ringCrossSections[nextI][j],
+        ringCrossSections[nextI][nextJ],
+      };
+
+      // Create brush from the 4 corners + use polyhedron (these 4 points may be
+      // coplanar, so we need to add center point to ensure volume)
+      const auto mid =
+        (vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4.0;
+      // Push mid inward toward torus center for thickness
+      const auto toCenter = vm::normalize(center - mid);
+      const auto innerMid = mid + toCenter * (minorRadius * 0.3);
+
+      auto allVerts = vertices;
+      allVerts.push_back(innerMid);
+
+      brushes.push_back(createBrush(fromXY * allVerts, materialName));
+    }
+  }
+
+  return brushes | kdl::fold;
+}
+
+Result<std::vector<Brush>> BrushBuilder::createTerrainGrid(
+  const vm::bbox3d& bounds,
+  const size_t rows,
+  const size_t cols,
+  const std::string& materialName) const
+{
+  if (rows == 0 || cols == 0)
+  {
+    return Error{"Terrain grid must have at least 1 row and 1 column"};
+  }
+
+  const auto cellWidth = bounds.size().x() / double(cols);
+  const auto cellDepth = bounds.size().y() / double(rows);
+
+  auto brushes = std::vector<Result<Brush>>{};
+  brushes.reserve(rows * cols);
+
+  for (size_t r = 0; r < rows; ++r)
+  {
+    for (size_t c = 0; c < cols; ++c)
+    {
+      const auto cellMin = vm::vec3d{
+        bounds.min.x() + double(c) * cellWidth,
+        bounds.min.y() + double(r) * cellDepth,
+        bounds.min.z(),
+      };
+      const auto cellMax = vm::vec3d{
+        bounds.min.x() + double(c + 1) * cellWidth,
+        bounds.min.y() + double(r + 1) * cellDepth,
+        bounds.max.z(),
+      };
+
+      brushes.push_back(createCuboid(vm::bbox3d{cellMin, cellMax}, materialName));
+    }
+  }
+
+  return brushes | kdl::fold;
+}
+
 Result<Brush> BrushBuilder::createBrush(
   const std::vector<vm::vec3d>& points, const std::string& materialName) const
 {

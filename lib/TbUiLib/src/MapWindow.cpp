@@ -73,12 +73,14 @@
 #include "ui/ActionExecutionContext.h"
 #include "ui/ActionManager.h"
 #include "ui/AppController.h"
+#include "ui/ArrayDialog.h"
 #include "ui/ChoosePathTypeDialog.h"
 #include "ui/ClipTool.h"
 #include "ui/ColorButton.h"
 #include "ui/CompilationDialog.h"
 #include "ui/Console.h"
 #include "ui/CrashReporter.h"
+#include "ui/CurvePathDialog.h"
 #include "ui/EdgeTool.h"
 #include "ui/FaceInspector.h"
 #include "ui/FaceTool.h"
@@ -1911,6 +1913,128 @@ bool MapWindow::canDoCsgIntersect() const
   const auto& map = m_document->map();
   const auto& selection = map.selection();
   return selection.hasOnlyBrushes() && selection.brushes.size() > 1;
+}
+
+void MapWindow::mirrorX()
+{
+  if (canMirror())
+  {
+    mdl::mirrorAndDuplicate(m_document->map(), vm::axis::x);
+  }
+}
+
+void MapWindow::mirrorY()
+{
+  if (canMirror())
+  {
+    mdl::mirrorAndDuplicate(m_document->map(), vm::axis::y);
+  }
+}
+
+void MapWindow::mirrorZ()
+{
+  if (canMirror())
+  {
+    mdl::mirrorAndDuplicate(m_document->map(), vm::axis::z);
+  }
+}
+
+bool MapWindow::canMirror() const
+{
+  const auto& map = m_document->map();
+  return map.selection().hasNodes();
+}
+
+void MapWindow::alignLeft()
+{
+  if (canAlign())
+    mdl::alignSelectionMin(m_document->map(), vm::axis::x);
+}
+void MapWindow::alignRight()
+{
+  if (canAlign())
+    mdl::alignSelectionMax(m_document->map(), vm::axis::x);
+}
+void MapWindow::alignBottom()
+{
+  if (canAlign())
+    mdl::alignSelectionMin(m_document->map(), vm::axis::z);
+}
+void MapWindow::alignTop()
+{
+  if (canAlign())
+    mdl::alignSelectionMax(m_document->map(), vm::axis::z);
+}
+void MapWindow::alignFront()
+{
+  if (canAlign())
+    mdl::alignSelectionMin(m_document->map(), vm::axis::y);
+}
+void MapWindow::alignBack()
+{
+  if (canAlign())
+    mdl::alignSelectionMax(m_document->map(), vm::axis::y);
+}
+void MapWindow::alignCenterH()
+{
+  if (canAlign())
+    mdl::alignSelectionCenter(m_document->map(), vm::axis::x);
+}
+void MapWindow::alignCenterV()
+{
+  if (canAlign())
+    mdl::alignSelectionCenter(m_document->map(), vm::axis::z);
+}
+void MapWindow::distributeX()
+{
+  if (canDistribute())
+    mdl::distributeSelection(m_document->map(), vm::axis::x);
+}
+void MapWindow::distributeY()
+{
+  if (canDistribute())
+    mdl::distributeSelection(m_document->map(), vm::axis::y);
+}
+void MapWindow::distributeZ()
+{
+  if (canDistribute())
+    mdl::distributeSelection(m_document->map(), vm::axis::z);
+}
+
+bool MapWindow::canAlign() const
+{
+  const auto& map = m_document->map();
+  return map.selection().nodes.size() >= 2;
+}
+
+bool MapWindow::canDistribute() const
+{
+  const auto& map = m_document->map();
+  return map.selection().nodes.size() >= 3;
+}
+
+void MapWindow::showArrayDialog()
+{
+  if (!canShowArrayDialog())
+  {
+    return;
+  }
+
+  // Create and show the array dialog
+  auto* dialog = new ArrayDialog{*m_document, this};
+  dialog->exec();
+}
+
+bool MapWindow::canShowArrayDialog() const
+{
+  const auto& map = m_document->map();
+  return map.selection().hasNodes();
+}
+
+void MapWindow::showCurvePathDialog()
+{
+  auto* dialog = new CurvePathDialog{*m_document, this};
+  dialog->exec();
 }
 
 void MapWindow::snapVerticesToInteger()
