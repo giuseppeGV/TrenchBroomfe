@@ -40,7 +40,7 @@
 #include "mdl/Node.h"
 #include "mdl/Transaction.h"
 #include "ui/MapDocument.h"
-#include "ui/QtUtils.h"
+#include "ui/QVecUtils.h"
 
 #include "vm/bbox.h"
 #include "vm/vec.h"
