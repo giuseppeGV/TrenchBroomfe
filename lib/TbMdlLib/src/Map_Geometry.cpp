@@ -78,35 +78,36 @@ bool transformSelection(
 
   for (auto* node : map.selection().nodes)
   {
-    node->accept(kdl::overload(
-      [&](auto&& thisLambda, WorldNode* worldNode) {
-        worldNode->visitChildren(thisLambda);
-      },
-      [&](auto&& thisLambda, LayerNode* layerNode) {
-        layerNode->visitChildren(thisLambda);
-      },
-      [&](auto&& thisLambda, GroupNode* groupNode) {
-        nodesToTransform.push_back(groupNode);
-        groupNode->visitChildren(thisLambda);
-      },
-      [&](auto&& thisLambda, EntityNode* entityNode) {
-        if (!entityNode->hasChildren())
-        {
-          nodesToTransform.push_back(entityNode);
-        }
-        else
-        {
-          entityNode->visitChildren(thisLambda);
-        }
-      },
-      [&](BrushNode* brushNode) {
-        nodesToTransform.push_back(brushNode);
-        entitiesToTransform[brushNode->entity()]++;
-      },
-      [&](PatchNode* patchNode) {
-        nodesToTransform.push_back(patchNode);
-        entitiesToTransform[patchNode->entity()]++;
-      }));
+    node->accept(
+      kdl::overload(
+        [&](auto&& thisLambda, WorldNode* worldNode) {
+          worldNode->visitChildren(thisLambda);
+        },
+        [&](auto&& thisLambda, LayerNode* layerNode) {
+          layerNode->visitChildren(thisLambda);
+        },
+        [&](auto&& thisLambda, GroupNode* groupNode) {
+          nodesToTransform.push_back(groupNode);
+          groupNode->visitChildren(thisLambda);
+        },
+        [&](auto&& thisLambda, EntityNode* entityNode) {
+          if (!entityNode->hasChildren())
+          {
+            nodesToTransform.push_back(entityNode);
+          }
+          else
+          {
+            entityNode->visitChildren(thisLambda);
+          }
+        },
+        [&](BrushNode* brushNode) {
+          nodesToTransform.push_back(brushNode);
+          entitiesToTransform[brushNode->entity()]++;
+        },
+        [&](PatchNode* patchNode) {
+          nodesToTransform.push_back(patchNode);
+          entitiesToTransform[patchNode->entity()]++;
+        }));
   }
 
   // add entities if all of their children are transformed
@@ -129,36 +130,37 @@ bool transformSelection(
   auto tasks =
     nodesToTransform | std::views::transform([&](auto& node) {
       return std::function{[&]() {
-        return node->accept(kdl::overload(
-          [&](WorldNode*) -> TransformResult { contract_assert(false); },
-          [&](LayerNode*) -> TransformResult { contract_assert(false); },
-          [&](GroupNode* groupNode) -> TransformResult {
-            auto group = groupNode->group();
-            group.transform(transformation);
-            return std::make_pair(groupNode, NodeContents{std::move(group)});
-          },
-          [&](EntityNode* entityNode) -> TransformResult {
-            auto entity = entityNode->entity();
-            entity.transform(transformation, updateAngleProperty);
-            return std::make_pair(entityNode, NodeContents{std::move(entity)});
-          },
-          [&](BrushNode* brushNode) -> TransformResult {
-            const auto* containingGroup = brushNode->containingGroup();
-            const bool lockAlignment =
+        return node->accept(
+          kdl::overload(
+            [&](WorldNode*) -> TransformResult { contract_assert(false); },
+            [&](LayerNode*) -> TransformResult { contract_assert(false); },
+            [&](GroupNode* groupNode) -> TransformResult {
+              auto group = groupNode->group();
+              group.transform(transformation);
+              return std::make_pair(groupNode, NodeContents{std::move(group)});
+            },
+            [&](EntityNode* entityNode) -> TransformResult {
+              auto entity = entityNode->entity();
+              entity.transform(transformation, updateAngleProperty);
+              return std::make_pair(entityNode, NodeContents{std::move(entity)});
+            },
+            [&](BrushNode* brushNode) -> TransformResult {
+              const auto* containingGroup = brushNode->containingGroup();
+              const bool lockAlignment =
             alignmentLock
             || (containingGroup && containingGroup->closed() && collectLinkedNodes({&map.worldNode()}, *brushNode).size() > 1);
 
-            auto brush = brushNode->brush();
-            return brush.transform(map.worldBounds(), transformation, lockAlignment)
-                   | kdl::and_then([&]() -> TransformResult {
-                       return std::make_pair(brushNode, NodeContents{std::move(brush)});
-                     });
-          },
-          [&](PatchNode* patchNode) -> TransformResult {
-            auto patch = patchNode->patch();
-            patch.transform(transformation);
-            return std::make_pair(patchNode, NodeContents{std::move(patch)});
-          }));
+              auto brush = brushNode->brush();
+              return brush.transform(map.worldBounds(), transformation, lockAlignment)
+                     | kdl::and_then([&]() -> TransformResult {
+                         return std::make_pair(brushNode, NodeContents{std::move(brush)});
+                       });
+            },
+            [&](PatchNode* patchNode) -> TransformResult {
+              auto patch = patchNode->patch();
+              patch.transform(transformation);
+              return std::make_pair(patchNode, NodeContents{std::move(patch)});
+            }));
       }};
     });
 
@@ -364,11 +366,12 @@ bool transformEdges(
     const auto changedLinkedGroups = collectContainingGroups(
       *newNodes | std::views::keys | kdl::ranges::to<std::vector>());
 
-    const auto result = map.executeAndStore(std::make_unique<BrushEdgeCommand>(
-      commandName,
-      std::move(*newNodes),
-      std::move(edgePositions),
-      std::move(newEdgePositions)));
+    const auto result = map.executeAndStore(
+      std::make_unique<BrushEdgeCommand>(
+        commandName,
+        std::move(*newNodes),
+        std::move(edgePositions),
+        std::move(newEdgePositions)));
 
     if (!result)
     {
@@ -437,11 +440,12 @@ bool transformFaces(
     auto changedLinkedGroups = collectContainingGroups(
       *newNodes | std::views::keys | kdl::ranges::to<std::vector>());
 
-    const auto result = map.executeAndStore(std::make_unique<BrushFaceCommand>(
-      commandName,
-      std::move(*newNodes),
-      std::move(facePositions),
-      std::move(newFacePositions)));
+    const auto result = map.executeAndStore(
+      std::make_unique<BrushFaceCommand>(
+        commandName,
+        std::move(*newNodes),
+        std::move(facePositions),
+        std::move(newFacePositions)));
 
     if (!result)
     {
@@ -486,11 +490,12 @@ bool addVertex(Map& map, const vm::vec3d& vertexPosition)
     const auto changedLinkedGroups = collectContainingGroups(
       *newNodes | std::views::keys | kdl::ranges::to<std::vector>());
 
-    const auto result = map.executeAndStore(std::make_unique<BrushVertexCommand>(
-      commandName,
-      std::move(*newNodes),
-      std::vector<vm::vec3d>{},
-      std::vector<vm::vec3d>{vertexPosition}));
+    const auto result = map.executeAndStore(
+      std::make_unique<BrushVertexCommand>(
+        commandName,
+        std::move(*newNodes),
+        std::vector<vm::vec3d>{},
+        std::vector<vm::vec3d>{vertexPosition}));
 
     if (!result)
     {
@@ -545,11 +550,12 @@ bool removeVertices(
     auto changedLinkedGroups = collectContainingGroups(
       *newNodes | std::views::keys | kdl::ranges::to<std::vector>());
 
-    const auto result = map.executeAndStore(std::make_unique<BrushVertexCommand>(
-      commandName,
-      std::move(*newNodes),
-      std::move(vertexPositions),
-      std::vector<vm::vec3d>{}));
+    const auto result = map.executeAndStore(
+      std::make_unique<BrushVertexCommand>(
+        commandName,
+        std::move(*newNodes),
+        std::move(vertexPositions),
+        std::vector<vm::vec3d>{}));
 
     if (!result)
     {
@@ -969,10 +975,7 @@ bool alignSelectionMin(Map& map, const vm::axis::type axis)
     if (!vm::is_zero(delta, vm::Cd::almost_zero()))
     {
       auto nodes = std::vector<Node*>{node};
-      transformSelection(
-        map,
-        "Align to Minimum",
-        vm::translation_matrix(delta));
+      transformSelection(map, "Align to Minimum", vm::translation_matrix(delta));
     }
   }
 
@@ -1004,10 +1007,7 @@ bool alignSelectionMax(Map& map, const vm::axis::type axis)
     delta[size_t(axis)] = targetMax - nodeBounds.max[size_t(axis)];
     if (!vm::is_zero(delta, vm::Cd::almost_zero()))
     {
-      transformSelection(
-        map,
-        "Align to Maximum",
-        vm::translation_matrix(delta));
+      transformSelection(map, "Align to Maximum", vm::translation_matrix(delta));
     }
   }
 
@@ -1039,10 +1039,7 @@ bool alignSelectionCenter(Map& map, const vm::axis::type axis)
     delta[size_t(axis)] = targetCenter - nodeBounds.center()[size_t(axis)];
     if (!vm::is_zero(delta, vm::Cd::almost_zero()))
     {
-      transformSelection(
-        map,
-        "Align to Center",
-        vm::translation_matrix(delta));
+      transformSelection(map, "Align to Center", vm::translation_matrix(delta));
     }
   }
 
@@ -1084,10 +1081,7 @@ bool distributeSelection(Map& map, const vm::axis::type axis)
     delta[size_t(axis)] = target - current;
     if (!vm::is_zero(delta, vm::Cd::almost_zero()))
     {
-      transformSelection(
-        map,
-        "Distribute",
-        vm::translation_matrix(delta));
+      transformSelection(map, "Distribute", vm::translation_matrix(delta));
     }
   }
 

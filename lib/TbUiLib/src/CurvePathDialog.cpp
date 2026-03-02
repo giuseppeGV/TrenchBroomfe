@@ -110,7 +110,8 @@ void CurvePathDialog::createGui()
 
   // Buttons
   auto* buttonBox = new QDialogButtonBox{};
-  auto* createButton = buttonBox->addButton(tr("Create Curve"), QDialogButtonBox::AcceptRole);
+  auto* createButton =
+    buttonBox->addButton(tr("Create Curve"), QDialogButtonBox::AcceptRole);
   buttonBox->addButton(QDialogButtonBox::Cancel);
 
   connect(buttonBox, &QDialogButtonBox::accepted, this, &CurvePathDialog::accept);
@@ -152,7 +153,8 @@ void CurvePathDialog::addPoint()
     }
     else
     {
-      QMessageBox::warning(this, tr("Invalid Input"), tr("Please enter three numbers separated by spaces."));
+      QMessageBox::warning(
+        this, tr("Invalid Input"), tr("Please enter three numbers separated by spaces."));
     }
   }
 }
@@ -182,7 +184,9 @@ void CurvePathDialog::loadFromSelection()
   if (m_controlPoints.empty())
   {
     QMessageBox::information(
-      this, tr("No Selection"), tr("Select some objects to use their centers as control points."));
+      this,
+      tr("No Selection"),
+      tr("Select some objects to use their centers as control points."));
   }
   refreshPointsList();
 }
@@ -194,7 +198,8 @@ void CurvePathDialog::refreshPointsList()
   {
     const auto& p = m_controlPoints[i];
     m_pointsList->addItem(
-      QString::fromStdString(fmt::format("{}: ({:.1f}, {:.1f}, {:.1f})", i + 1, p.x(), p.y(), p.z())));
+      QString::fromStdString(
+        fmt::format("{}: ({:.1f}, {:.1f}, {:.1f})", i + 1, p.x(), p.y(), p.z())));
   }
 }
 
@@ -232,9 +237,9 @@ std::vector<vm::vec3d> CurvePathDialog::evaluateCatmullRom(
       const auto t3 = t2 * t;
 
       // Catmull-Rom spline formula
-      const auto point = 0.5
-        * ((2.0 * p1) + (-p0 + p2) * t + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2
-           + (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
+      const auto point =
+        0.5
+        * ((2.0 * p1) + (-p0 + p2) * t + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 + (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
       result.push_back(point);
     }
   }
@@ -322,7 +327,8 @@ void CurvePathDialog::accept()
 
   if (newNodes.empty())
   {
-    QMessageBox::warning(this, tr("Error"), tr("No brushes could be created from the curve."));
+    QMessageBox::warning(
+      this, tr("Error"), tr("No brushes could be created from the curve."));
     return;
   }
 
@@ -334,7 +340,8 @@ void CurvePathDialog::accept()
   if (added.empty())
   {
     transaction.cancel();
-    QMessageBox::warning(this, tr("Error"), tr("Failed to add curve brushes to the map."));
+    QMessageBox::warning(
+      this, tr("Error"), tr("Failed to add curve brushes to the map."));
     return;
   }
 

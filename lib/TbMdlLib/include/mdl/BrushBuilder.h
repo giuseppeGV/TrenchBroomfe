@@ -118,9 +118,7 @@ public:
     const vm::bbox3d& bounds, size_t iterations, const std::string& textureName) const;
 
   Result<Brush> createWedge(
-    const vm::bbox3d& bounds,
-    vm::axis::type axis,
-    const std::string& materialName) const;
+    const vm::bbox3d& bounds, vm::axis::type axis, const std::string& materialName) const;
 
   Result<std::vector<Brush>> createStaircase(
     const vm::bbox3d& bounds,

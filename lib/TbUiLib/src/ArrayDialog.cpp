@@ -133,7 +133,11 @@ void ArrayDialog::createGui()
   m_modeStack->addWidget(linearPage);
   m_modeStack->addWidget(radialPage);
 
-  connect(m_modeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ArrayDialog::modeChanged);
+  connect(
+    m_modeCombo,
+    QOverload<int>::of(&QComboBox::currentIndexChanged),
+    this,
+    &ArrayDialog::modeChanged);
 
   // Buttons
   auto* buttonBox = new QDialogButtonBox{};
@@ -169,15 +173,18 @@ void ArrayDialog::accept()
   if (m_modeCombo->currentIndex() == 0)
   {
     // Linear
-    const auto offset = vm::vec3d{m_offsetX->value(), m_offsetY->value(), m_offsetZ->value()};
+    const auto offset =
+      vm::vec3d{m_offsetX->value(), m_offsetY->value(), m_offsetZ->value()};
     mdl::arrayLinear(map, count, offset);
   }
   else
   {
     // Radial
-    const auto center = vm::vec3d{m_centerX->value(), m_centerY->value(), m_centerZ->value()};
+    const auto center =
+      vm::vec3d{m_centerX->value(), m_centerY->value(), m_centerZ->value()};
     const auto axisIndex = m_axisCombo->currentIndex();
-    const auto axis = axisIndex == 0 ? vm::axis::x : (axisIndex == 1 ? vm::axis::y : vm::axis::z);
+    const auto axis =
+      axisIndex == 0 ? vm::axis::x : (axisIndex == 1 ? vm::axis::y : vm::axis::z);
     const auto angle = m_totalAngle->value();
     mdl::arrayRadial(map, count, center, axis, angle);
   }

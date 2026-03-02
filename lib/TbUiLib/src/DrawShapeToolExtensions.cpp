@@ -145,31 +145,33 @@ DrawShapeToolCircularShapeExtensionPage::DrawShapeToolCircularShapeExtensionPage
     QOverload<int>::of(&QSpinBox::valueChanged),
     this,
     [&](const auto numSides) {
-      m_parameters.setCircleShape(std::visit(
-        kdl::overload(
-          [&](const mdl::EdgeAlignedCircle&) -> mdl::CircleShape {
-            return mdl::EdgeAlignedCircle{size_t(numSides)};
-          },
-          [&](const mdl::VertexAlignedCircle&) -> mdl::CircleShape {
-            return mdl::VertexAlignedCircle{size_t(numSides)};
-          },
-          [&](const mdl::ScalableCircle& circleShape) -> mdl::CircleShape {
-            return circleShape;
-          }),
-        m_parameters.circleShape()));
+      m_parameters.setCircleShape(
+        std::visit(
+          kdl::overload(
+            [&](const mdl::EdgeAlignedCircle&) -> mdl::CircleShape {
+              return mdl::EdgeAlignedCircle{size_t(numSides)};
+            },
+            [&](const mdl::VertexAlignedCircle&) -> mdl::CircleShape {
+              return mdl::VertexAlignedCircle{size_t(numSides)};
+            },
+            [&](const mdl::ScalableCircle& circleShape) -> mdl::CircleShape {
+              return circleShape;
+            }),
+          m_parameters.circleShape()));
     });
   connect(
     precisionBox,
     QOverload<int>::of(&QComboBox::currentIndexChanged),
     this,
     [&](const auto precision) {
-      m_parameters.setCircleShape(std::visit(
-        kdl::overload(
-          [&](const mdl::ScalableCircle&) -> mdl::CircleShape {
-            return mdl::ScalableCircle{size_t(precision)};
-          },
-          [](const auto& circleShape) -> mdl::CircleShape { return circleShape; }),
-        m_parameters.circleShape()));
+      m_parameters.setCircleShape(
+        std::visit(
+          kdl::overload(
+            [&](const mdl::ScalableCircle&) -> mdl::CircleShape {
+              return mdl::ScalableCircle{size_t(precision)};
+            },
+            [](const auto& circleShape) -> mdl::CircleShape { return circleShape; }),
+          m_parameters.circleShape()));
     });
   connect(edgeAlignedCircleButton, &QToolButton::clicked, this, [=, this]() {
     m_parameters.setCircleShape(
@@ -648,10 +650,9 @@ DrawShapeToolArchShapeExtensionPage::DrawShapeToolArchShapeExtensionPage(
   thicknessBox->setRange(1.0, 1024.0);
 
   connect(
-    numSlicesBox,
-    QOverload<int>::of(&QSpinBox::valueChanged),
-    this,
-    [&](const auto n) { m_parameters.setNumSlices(size_t(n)); });
+    numSlicesBox, QOverload<int>::of(&QSpinBox::valueChanged), this, [&](const auto n) {
+      m_parameters.setNumSlices(size_t(n));
+    });
   connect(
     arcBox,
     QOverload<double>::of(&QDoubleSpinBox::valueChanged),
@@ -810,15 +811,13 @@ DrawShapeToolTorusShapeExtensionPage::DrawShapeToolTorusShapeExtensionPage(
   tubeSegBox->setRange(3, 32);
 
   connect(
-    ringSegBox,
-    QOverload<int>::of(&QSpinBox::valueChanged),
-    this,
-    [&](const auto n) { m_parameters.setNumRingSegments(size_t(n)); });
+    ringSegBox, QOverload<int>::of(&QSpinBox::valueChanged), this, [&](const auto n) {
+      m_parameters.setNumRingSegments(size_t(n));
+    });
   connect(
-    tubeSegBox,
-    QOverload<int>::of(&QSpinBox::valueChanged),
-    this,
-    [&](const auto n) { m_parameters.setNumTubeSegments(size_t(n)); });
+    tubeSegBox, QOverload<int>::of(&QSpinBox::valueChanged), this, [&](const auto n) {
+      m_parameters.setNumTubeSegments(size_t(n));
+    });
 
   addWidget(ringSegLabel);
   addWidget(ringSegBox);
@@ -891,16 +890,12 @@ DrawShapeToolTerrainGridShapeExtensionPage::DrawShapeToolTerrainGridShapeExtensi
   auto* colsBox = new QSpinBox{};
   colsBox->setRange(1, 64);
 
-  connect(
-    rowsBox,
-    QOverload<int>::of(&QSpinBox::valueChanged),
-    this,
-    [&](const auto n) { m_parameters.setGridRows(size_t(n)); });
-  connect(
-    colsBox,
-    QOverload<int>::of(&QSpinBox::valueChanged),
-    this,
-    [&](const auto n) { m_parameters.setGridCols(size_t(n)); });
+  connect(rowsBox, QOverload<int>::of(&QSpinBox::valueChanged), this, [&](const auto n) {
+    m_parameters.setGridRows(size_t(n));
+  });
+  connect(colsBox, QOverload<int>::of(&QSpinBox::valueChanged), this, [&](const auto n) {
+    m_parameters.setGridCols(size_t(n));
+  });
 
   addWidget(rowsLabel);
   addWidget(rowsBox);

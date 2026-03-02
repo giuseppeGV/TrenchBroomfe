@@ -504,12 +504,13 @@ auto setZ(const std::vector<vm::vec2d>& vertices, const double z)
 auto makeScalableConeTip(const vm::bbox3d& boundsXY)
 {
   const auto offset = vm::min(boundsXY.xy().size().x(), boundsXY.xy().size().y()) / 2.0;
-  return kdl::vec_sort_and_remove_duplicates(std::vector<vm::vec2d>{
-    {boundsXY.xy().min.x() + offset, boundsXY.xy().min.y() + offset},
-    {boundsXY.xy().min.x() + offset, boundsXY.xy().max.y() - offset},
-    {boundsXY.xy().max.x() - offset, boundsXY.xy().min.y() + offset},
-    {boundsXY.xy().max.x() - offset, boundsXY.xy().max.y() - offset},
-  });
+  return kdl::vec_sort_and_remove_duplicates(
+    std::vector<vm::vec2d>{
+      {boundsXY.xy().min.x() + offset, boundsXY.xy().min.y() + offset},
+      {boundsXY.xy().min.x() + offset, boundsXY.xy().max.y() - offset},
+      {boundsXY.xy().max.x() - offset, boundsXY.xy().min.y() + offset},
+      {boundsXY.xy().max.x() - offset, boundsXY.xy().max.y() - offset},
+    });
 }
 
 auto makeCone(const CircleShape& circleShape, const vm::bbox3d& boundsXY)
@@ -790,8 +791,8 @@ Result<std::vector<Brush>> BrushBuilder::createStaircase(
     const auto transformedMin = fromXY * stepBounds.min;
     const auto transformedMax = fromXY * stepBounds.max;
     brushes.push_back(createCuboid(
-      vm::bbox3d{vm::min(transformedMin, transformedMax),
-                 vm::max(transformedMin, transformedMax)},
+      vm::bbox3d{
+        vm::min(transformedMin, transformedMax), vm::max(transformedMin, transformedMax)},
       materialName));
   }
 
@@ -844,18 +845,14 @@ Result<std::vector<Brush>> BrushBuilder::createArch(
     const auto a0 = startAngle - double(i) * angleStep;
     const auto a1 = startAngle - double(i + 1) * angleStep;
 
-    const auto outerP0 =
-      vm::vec2d{center.x() + outerRadiusX * std::cos(a0),
-                center.y() + outerRadiusY * std::sin(a0)};
-    const auto outerP1 =
-      vm::vec2d{center.x() + outerRadiusX * std::cos(a1),
-                center.y() + outerRadiusY * std::sin(a1)};
-    const auto innerP0 =
-      vm::vec2d{center.x() + innerRadiusX * std::cos(a0),
-                center.y() + innerRadiusY * std::sin(a0)};
-    const auto innerP1 =
-      vm::vec2d{center.x() + innerRadiusX * std::cos(a1),
-                center.y() + innerRadiusY * std::sin(a1)};
+    const auto outerP0 = vm::vec2d{
+      center.x() + outerRadiusX * std::cos(a0), center.y() + outerRadiusY * std::sin(a0)};
+    const auto outerP1 = vm::vec2d{
+      center.x() + outerRadiusX * std::cos(a1), center.y() + outerRadiusY * std::sin(a1)};
+    const auto innerP0 = vm::vec2d{
+      center.x() + innerRadiusX * std::cos(a0), center.y() + innerRadiusY * std::sin(a0)};
+    const auto innerP1 = vm::vec2d{
+      center.x() + innerRadiusX * std::cos(a1), center.y() + innerRadiusY * std::sin(a1)};
 
     const auto vertices = std::vector<vm::vec3d>{
       {outerP0, b.min.z()},
@@ -905,8 +902,7 @@ Result<std::vector<Brush>> BrushBuilder::createTorus(
   const auto center = b.center();
   // Major radius = distance from torus center to tube center
   // Minor radius = tube radius
-  const auto outerRadiusXY =
-    vm::vec2d{b.size().x() / 2.0, b.size().y() / 2.0};
+  const auto outerRadiusXY = vm::vec2d{b.size().x() / 2.0, b.size().y() / 2.0};
   const auto minorRadius = b.size().z() / 2.0;
   const auto majorRadiusXY =
     vm::vec2d{outerRadiusXY.x() - minorRadius, outerRadiusXY.y() - minorRadius};
@@ -947,8 +943,7 @@ Result<std::vector<Brush>> BrushBuilder::createTorus(
 
       // Point on tube cross-section: outward component + up component
       crossSection.push_back(
-        tubeCenter + outDir * (minorRadius * cosT)
-        + vm::vec3d{0, 0, minorRadius * sinT});
+        tubeCenter + outDir * (minorRadius * cosT) + vm::vec3d{0, 0, minorRadius * sinT});
     }
 
     ringCrossSections.push_back(std::move(crossSection));
@@ -975,8 +970,7 @@ Result<std::vector<Brush>> BrushBuilder::createTorus(
 
       // Create brush from the 4 corners + use polyhedron (these 4 points may be
       // coplanar, so we need to add center point to ensure volume)
-      const auto mid =
-        (vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4.0;
+      const auto mid = (vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4.0;
       // Push mid inward toward torus center for thickness
       const auto toCenter = vm::normalize(center - mid);
       const auto innerMid = mid + toCenter * (minorRadius * 0.3);

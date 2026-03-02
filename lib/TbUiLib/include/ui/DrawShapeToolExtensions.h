@@ -220,8 +220,7 @@ public:
     const vm::bbox3d& bounds, const ShapeParameters& parameters) const override;
 };
 
-class DrawShapeToolArchShapeExtensionPage
-  : public DrawShapeToolCircularShapeExtensionPage
+class DrawShapeToolArchShapeExtensionPage : public DrawShapeToolCircularShapeExtensionPage
 {
 public:
   explicit DrawShapeToolArchShapeExtensionPage(
@@ -245,8 +244,7 @@ public:
     const vm::bbox3d& bounds, const ShapeParameters& parameters) const override;
 };
 
-class DrawShapeToolPipeShapeExtensionPage
-  : public DrawShapeToolCircularShapeExtensionPage
+class DrawShapeToolPipeShapeExtensionPage : public DrawShapeToolCircularShapeExtensionPage
 {
 public:
   explicit DrawShapeToolPipeShapeExtensionPage(
