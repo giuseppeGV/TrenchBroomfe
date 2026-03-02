@@ -40,6 +40,7 @@
 #include "mdl/Node.h"
 #include "mdl/Transaction.h"
 #include "ui/MapDocument.h"
+#include "ui/QStyleUtils.h"
 #include "ui/QVecUtils.h"
 
 #include "vm/bbox.h"
