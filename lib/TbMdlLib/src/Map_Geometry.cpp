@@ -932,7 +932,7 @@ bool mirrorAndDuplicate(Map& map, const vm::axis::type axis)
     return false;
   }
 
-  const auto bounds = selection.computeBounds();
+  const auto bounds = map.selectionBounds();
   if (!bounds)
   {
     return false;
@@ -957,7 +957,7 @@ bool alignSelectionMin(Map& map, const vm::axis::type axis)
     return false;
   }
 
-  const auto bounds = selection.computeBounds();
+  const auto bounds = map.selectionBounds();
   if (!bounds)
   {
     return false;
@@ -989,7 +989,7 @@ bool alignSelectionMax(Map& map, const vm::axis::type axis)
     return false;
   }
 
-  const auto bounds = selection.computeBounds();
+  const auto bounds = map.selectionBounds();
   if (!bounds)
   {
     return false;
@@ -1021,7 +1021,7 @@ bool alignSelectionCenter(Map& map, const vm::axis::type axis)
     return false;
   }
 
-  const auto bounds = selection.computeBounds();
+  const auto bounds = map.selectionBounds();
   if (!bounds)
   {
     return false;
@@ -1053,7 +1053,7 @@ bool distributeSelection(Map& map, const vm::axis::type axis)
     return false;
   }
 
-  const auto bounds = selection.computeBounds();
+  const auto bounds = map.selectionBounds();
   if (!bounds)
   {
     return false;
