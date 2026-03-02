@@ -272,11 +272,13 @@ void CurvePathDialog::accept()
   const auto halfHeight = m_heightSpin->value() / 2.0;
 
   auto& map = m_document.map();
-  const auto defaultMaterialName = map.defaultMaterialName();
-  const auto mapFormat = map.mapFormat();
+  const auto materialName = map.currentMaterialName();
   const auto worldBounds = map.worldBounds();
 
-  const mdl::BrushBuilder builder{mapFormat, worldBounds};
+  const mdl::BrushBuilder builder{
+    map.worldNode().mapFormat(),
+    worldBounds,
+    map.gameInfo().gameConfig.faceAttribsConfig.defaults};
 
   // Build brushes along the curve
   std::vector<mdl::Node*> newNodes;
@@ -318,7 +320,7 @@ void CurvePathDialog::accept()
 
     const std::vector<vm::vec3d> vertices = {s0, s1, s2, s3, e0, e1, e2, e3};
 
-    auto brushResult = builder.createBrush(vertices, defaultMaterialName);
+    auto brushResult = builder.createBrush(vertices, materialName);
     if (brushResult.is_success())
     {
       newNodes.push_back(new mdl::BrushNode{std::move(brushResult).value()});
