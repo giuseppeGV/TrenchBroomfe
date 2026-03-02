@@ -974,7 +974,6 @@ bool alignSelectionMin(Map& map, const vm::axis::type axis)
     delta[size_t(axis)] = targetMin - nodeBounds.min[size_t(axis)];
     if (!vm::is_zero(delta, vm::Cd::almost_zero()))
     {
-      auto nodes = std::vector<Node*>{node};
       transformSelection(map, "Align to Minimum", vm::translation_matrix(delta));
     }
   }

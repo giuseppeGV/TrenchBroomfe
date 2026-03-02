@@ -110,8 +110,7 @@ void CurvePathDialog::createGui()
 
   // Buttons
   auto* buttonBox = new QDialogButtonBox{};
-  auto* createButton =
-    buttonBox->addButton(tr("Create Curve"), QDialogButtonBox::AcceptRole);
+  buttonBox->addButton(tr("Create Curve"), QDialogButtonBox::AcceptRole);
   buttonBox->addButton(QDialogButtonBox::Cancel);
 
   connect(buttonBox, &QDialogButtonBox::accepted, this, &CurvePathDialog::accept);

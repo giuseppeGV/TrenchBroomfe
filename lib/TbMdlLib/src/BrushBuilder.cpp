@@ -804,7 +804,7 @@ Result<std::vector<Brush>> BrushBuilder::createArch(
   const size_t numSlices,
   const double arcDegrees,
   const double thickness,
-  const CircleShape& circleShape,
+  const CircleShape& /* circleShape */,
   const vm::axis::type axis,
   const std::string& materialName) const
 {
@@ -835,7 +835,6 @@ Result<std::vector<Brush>> BrushBuilder::createArch(
   const auto arcRadians = arcDegrees * vm::Cd::pi() / 180.0;
   const auto startAngle = vm::Cd::half_pi(); // Start from the top
   const auto angleStep = arcRadians / double(numSlices);
-  const auto halfHeight = b.size().z() / 2.0;
 
   auto brushes = std::vector<Result<Brush>>{};
   brushes.reserve(numSlices);
