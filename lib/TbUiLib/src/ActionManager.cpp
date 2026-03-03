@@ -1406,7 +1406,7 @@ void ActionManager::createEditMenu()
       "Menu/Edit/Array",
       QObject::tr("Array / Clone..."),
       ActionContext::Any,
-      QKeySequence{Qt::CTRL | Qt::SHIFT | Qt::Key_A},
+      QKeySequence{},
       [](auto& context) { context.mapWindow().showArrayDialog(); },
       [](const auto& context) {
         return context.hasDocument() && context.mapWindow().canShowArrayDialog();
