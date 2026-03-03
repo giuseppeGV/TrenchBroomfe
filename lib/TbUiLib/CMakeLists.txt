@@ -244,6 +244,7 @@ target_sources(TbUiLib
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/Animation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/AppController.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/AppInfoPanel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/ArrayDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/AssembleBrushTool.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/AssembleBrushToolController3D.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/AutoSizeTableRows.h
@@ -284,6 +285,7 @@ target_sources(TbUiLib
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/CreateBrushesToolBase.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/CreateEntityTool.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/CreateEntityToolController.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/CurvePathDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/CurrentGameIndicator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/CyclingMapView.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ui/DialogButtonLayout.h
