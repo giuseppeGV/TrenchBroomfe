@@ -36,14 +36,15 @@
 #include "ui/MaterialBrowser.h"
 #include "ui/MaterialCollectionEditor.h"
 #include "ui/QStyleUtils.h"
-#include "ui/TextureBrowserPanel.h"
 #include "ui/Splitter.h"
 #include "ui/SwitchableTitledPanel.h"
+#include "ui/TextureBrowserPanel.h"
 #include "ui/ViewConstants.h"
 #include "ui/WidgetState.h"
 
 #include <algorithm>
 #include <vector>
+
 
 namespace tb::ui
 {

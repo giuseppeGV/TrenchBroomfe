@@ -19,10 +19,11 @@
 
 #pragma once
 
+#include <QString>
+
 #include "NotifierConnection.h"
 #include "ui/TabBook.h"
 
-#include <QString>
 
 class QSplitter;
 class QWidget;

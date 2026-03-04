@@ -19,14 +19,15 @@
 
 #pragma once
 
-#include "NotifierConnection.h"
-
 #include <QWidget>
+
+#include "NotifierConnection.h"
 
 #include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 
 class QComboBox;
 class QLineEdit;
@@ -95,9 +96,11 @@ signals:
   /**
    * Emitted when the user clicks a texture in the grid.
    * @param material Pointer to the Material in the MaterialManager, or nullptr if the
-   *                 texture is from an external directory and not loaded into the manager.
+   *                 texture is from an external directory and not loaded into the
+   * manager.
    * @param materialName The material/texture name. For engine-loaded materials this is
-   *                     the canonical name; for external textures it is the filename stem.
+   *                     the canonical name; for external textures it is the filename
+   * stem.
    */
   void materialSelected(const gl::Material* material, const QString& materialName);
 

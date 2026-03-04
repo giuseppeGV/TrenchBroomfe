@@ -60,7 +60,15 @@ namespace tb::ui
 // Supported extensions for external directory scanning.
 // Qt's QImage supports these natively on most platforms.
 const std::vector<std::string> TextureBrowserPanel::s_supportedExtensions = {
-  ".png", ".jpg", ".jpeg", ".bmp", ".tga", ".tif", ".tiff", ".gif", ".webp",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".bmp",
+  ".tga",
+  ".tif",
+  ".tiff",
+  ".gif",
+  ".webp",
 };
 
 TextureBrowserPanel::TextureBrowserPanel(MapDocument& document, QWidget* parent)
@@ -169,10 +177,7 @@ void TextureBrowserPanel::createGui()
     this,
     &TextureBrowserPanel::onIconSizeChanged);
   connect(
-    m_textureGrid,
-    &QListWidget::itemClicked,
-    this,
-    &TextureBrowserPanel::onItemClicked);
+    m_textureGrid, &QListWidget::itemClicked, this, &TextureBrowserPanel::onItemClicked);
   connect(
     m_textureGrid,
     &QListWidget::itemDoubleClicked,
@@ -186,8 +191,10 @@ void TextureBrowserPanel::createGui()
 
 void TextureBrowserPanel::connectObservers()
 {
-  m_notifierConnection +=
-    m_document.documentWasLoadedNotifier.connect([&] { populateDirectoryCombo(); reloadGrid(); });
+  m_notifierConnection += m_document.documentWasLoadedNotifier.connect([&] {
+    populateDirectoryCombo();
+    reloadGrid();
+  });
   m_notifierConnection +=
     m_document.documentDidChangeNotifier.connect([&] { populateDirectoryCombo(); });
 
@@ -213,8 +220,7 @@ void TextureBrowserPanel::populateDirectoryCombo()
   m_directoryCombo->clear();
 
   // First entry: show all
-  m_directoryCombo->addItem(
-    tr("All Collections"), QVariant{QString{"__all__"}});
+  m_directoryCombo->addItem(tr("All Collections"), QVariant{QString{"__all__"}});
 
   // Add each material collection as a directory entry
   const auto& collections = m_document.map().materialManager().collections();
@@ -232,8 +238,7 @@ void TextureBrowserPanel::populateDirectoryCombo()
     for (const auto& extDir : m_externalDirectories)
     {
       const auto pathStr = QString::fromStdString(extDir.string());
-      m_directoryCombo->addItem(
-        tr("[External] %1").arg(pathStr), QVariant{pathStr});
+      m_directoryCombo->addItem(tr("[External] %1").arg(pathStr), QVariant{pathStr});
     }
   }
 
@@ -266,8 +271,7 @@ void TextureBrowserPanel::onBrowseDirectory()
   const auto dirPath = std::filesystem::path{dir.toStdString()};
 
   // Don't add duplicates
-  const auto it =
-    std::ranges::find(m_externalDirectories, dirPath);
+  const auto it = std::ranges::find(m_externalDirectories, dirPath);
   if (it == m_externalDirectories.end())
   {
     m_externalDirectories.push_back(dirPath);
@@ -315,8 +319,8 @@ void TextureBrowserPanel::onItemClicked(QListWidgetItem* item)
   }
 
   const auto materialName = item->data(Qt::UserRole).toString();
-  const auto* material = m_document.map().materialManager().material(
-    materialName.toStdString());
+  const auto* material =
+    m_document.map().materialManager().material(materialName.toStdString());
 
   emit materialSelected(material, materialName);
 }
@@ -390,7 +394,7 @@ void TextureBrowserPanel::loadFromCollection(const std::filesystem::path& collec
         }
 
         auto* item = new QListWidgetItem{QIcon{pixmap}, displayName};
-        item->setData(Qt::UserRole, name);  // Store the material name
+        item->setData(Qt::UserRole, name); // Store the material name
         item->setToolTip(
           name + "\n"
           + (material.absolutePath().empty()
@@ -447,13 +451,12 @@ void TextureBrowserPanel::loadAllCollections()
   }
 }
 
-void TextureBrowserPanel::loadFromExternalDirectory(
-  const std::filesystem::path& dirPath)
+void TextureBrowserPanel::loadFromExternalDirectory(const std::filesystem::path& dirPath)
 {
   if (!std::filesystem::exists(dirPath) || !std::filesystem::is_directory(dirPath))
   {
-    m_statusLabel->setText(tr("Directory not found: %1")
-                             .arg(QString::fromStdString(dirPath.string())));
+    m_statusLabel->setText(
+      tr("Directory not found: %1").arg(QString::fromStdString(dirPath.string())));
     return;
   }
 
@@ -482,9 +485,8 @@ void TextureBrowserPanel::loadFromExternalDirectory(
   }
 
   // Sort by filename
-  std::ranges::sort(entries, [](const auto& a, const auto& b) {
-    return a.filename() < b.filename();
-  });
+  std::ranges::sort(
+    entries, [](const auto& a, const auto& b) { return a.filename() < b.filename(); });
 
   for (const auto& filePath : entries)
   {
@@ -500,8 +502,7 @@ void TextureBrowserPanel::loadFromExternalDirectory(
     // The user can configure the game to resolve this later.
     auto* item = new QListWidgetItem{QIcon{pixmap}, fileName};
     item->setData(Qt::UserRole, fileName);
-    item->setToolTip(
-      fileName + "\n" + QString::fromStdString(filePath.string()));
+    item->setToolTip(fileName + "\n" + QString::fromStdString(filePath.string()));
 
     m_textureGrid->addItem(item);
   }
@@ -528,8 +529,7 @@ void TextureBrowserPanel::applyFilter()
     {
       const auto name = item->data(Qt::UserRole).toString().toLower();
       const auto displayName = item->text().toLower();
-      const auto matches =
-        name.contains(filterText) || displayName.contains(filterText);
+      const auto matches = name.contains(filterText) || displayName.contains(filterText);
       item->setHidden(!matches);
       if (matches)
       {
@@ -582,8 +582,8 @@ QPixmap TextureBrowserPanel::createThumbnail(
   }
 
   // Scale to fit the thumbnail size, preserving aspect ratio
-  return QPixmap::fromImage(
-    image.scaled(thumbnailSize, thumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+  return QPixmap::fromImage(image.scaled(
+    thumbnailSize, thumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
 QPixmap TextureBrowserPanel::createPlaceholderThumbnail(const int thumbnailSize)
