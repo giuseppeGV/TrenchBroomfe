@@ -22,6 +22,7 @@
 #include "gl/MaterialCollection.h"
 #include "gl/ResourceId.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -41,6 +42,7 @@ private:
   Logger& m_logger;
 
   std::vector<MaterialCollection> m_collections;
+  std::vector<std::unique_ptr<Material>> m_externalMaterials;
 
   std::unordered_map<std::string, Material*> m_materialsByName;
   std::vector<const Material*> m_materials;
@@ -64,8 +66,8 @@ public:
 
   /**
    * Add an external material (e.g. loaded from disk outside the game filesystem).
-   * The material is added to a dedicated "External" collection and the lookup is
-   * updated so that brush faces can resolve it by name.
+   * The material is stored as a heap-allocated object with a stable pointer, and
+   * registered in the lookup tables so that brush faces can resolve it by name.
    */
   Material* addExternalMaterial(Material material);
 

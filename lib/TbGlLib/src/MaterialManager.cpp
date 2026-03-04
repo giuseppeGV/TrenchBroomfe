@@ -54,6 +54,7 @@ void MaterialManager::setMaterialCollections(std::vector<MaterialCollection> col
 void MaterialManager::clear()
 {
   m_collections.clear();
+  m_externalMaterials.clear();
   m_materialsByName.clear();
   m_materials.clear();
 
@@ -103,38 +104,22 @@ Material* MaterialManager::addExternalMaterial(Material material)
     return it->second;
   }
 
-  // Find or create the "External" collection.
-  // We must be careful: pushing to m_collections can reallocate and invalidate all
-  // Material* pointers, so we always call updateMaterials() afterwards.
-  static const auto externalPath = std::filesystem::path{"__external__"};
-  auto collectionIt = std::ranges::find_if(
-    m_collections, [](const auto& c) { return c.path() == externalPath; });
-
-  if (collectionIt == m_collections.end())
-  {
-    // Reserve space to avoid reallocation when pushing the collection
-    if (m_collections.size() == m_collections.capacity())
-    {
-      m_collections.reserve(m_collections.size() + 4);
-    }
-    m_collections.push_back(MaterialCollection{externalPath});
-    collectionIt = std::prev(m_collections.end());
-    m_logger.info() << "Created external material collection";
-  }
-
-  material.setCollectionName(externalPath.string());
+  // Store the material as an individually heap-allocated object via unique_ptr.
+  // This guarantees that the Material* pointer remains stable regardless of how many
+  // external materials are added (vector<unique_ptr> reallocation only moves pointers,
+  // not the pointed-to Material objects).
   const auto materialName = material.name();
-  collectionIt->materials().push_back(std::move(material));
+  auto ptr = std::make_unique<Material>(std::move(material));
+  auto* rawPtr = ptr.get();
+  m_externalMaterials.push_back(std::move(ptr));
 
-  // Rebuild all pointer maps since the push_back above may have reallocated the
-  // internal materials vector, invalidating existing Material* pointers.
-  updateMaterials();
+  // Register in the lookup tables directly (no need to rebuild everything)
+  m_materialsByName[key] = rawPtr;
+  m_materials.push_back(rawPtr);
 
   m_logger.info() << "Added external material: " << materialName;
 
-  // Return a stable pointer from the freshly rebuilt map
-  auto it = m_materialsByName.find(key);
-  return it != m_materialsByName.end() ? it->second : nullptr;
+  return rawPtr;
 }
 
 void MaterialManager::addMaterialCollection(MaterialCollection collection)
@@ -166,6 +151,14 @@ void MaterialManager::updateMaterials()
         m_materialsByName.insert(std::make_pair(key, &material));
       }
     }
+  }
+
+  // Also include heap-allocated external materials
+  for (auto& ptr : m_externalMaterials)
+  {
+    const auto key = kdl::str_to_lower(ptr->name());
+    // External materials take precedence (insert or overwrite)
+    m_materialsByName[key] = ptr.get();
   }
 
   m_materials =
