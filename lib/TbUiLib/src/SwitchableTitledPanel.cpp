@@ -25,12 +25,13 @@
 #include <QIODevice>
 #include <QStackedLayout>
 
-#include <vector>
-
 #include "ui/BorderLine.h"
 #include "ui/ClickableTitleBar.h"
 
 #include "kd/contracts.h"
+
+#include <vector>
+
 
 namespace tb::ui
 {
