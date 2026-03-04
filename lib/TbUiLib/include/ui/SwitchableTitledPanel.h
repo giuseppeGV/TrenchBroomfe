@@ -21,7 +21,7 @@
 
 #include <QWidget>
 
-#include <array>
+#include <initializer_list>
 #include <vector>
 
 class QStackedLayout;
@@ -47,16 +47,9 @@ private:
   std::vector<SwitchablePanel> m_panels;
 
 public:
-  // Legacy 2-panel constructor (preserves source compatibility)
   explicit SwitchableTitledPanel(
     const QString& title,
-    const std::array<QString, 2>& stateTexts,
-    QWidget* parent = nullptr);
-
-  // N-panel constructor
-  explicit SwitchableTitledPanel(
-    const QString& title,
-    const std::vector<QString>& stateTexts,
+    std::initializer_list<QString> stateTexts,
     QWidget* parent = nullptr);
 
   QWidget* getPanel(size_t index) const;
@@ -69,7 +62,7 @@ public:
   bool restoreState(const QByteArray& state);
 
 private:
-  void init(const QString& title, const std::vector<QString>& stateTexts);
+  void init(const QString& title, std::initializer_list<QString> stateTexts);
 };
 
 } // namespace tb::ui

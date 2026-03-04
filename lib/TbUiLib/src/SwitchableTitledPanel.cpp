@@ -25,6 +25,8 @@
 #include <QIODevice>
 #include <QStackedLayout>
 
+#include <vector>
+
 #include "ui/BorderLine.h"
 #include "ui/ClickableTitleBar.h"
 
@@ -34,35 +36,29 @@ namespace tb::ui
 {
 
 SwitchableTitledPanel::SwitchableTitledPanel(
-  const QString& title, const std::array<QString, 2>& stateTexts, QWidget* parent)
-  : QWidget{parent}
-{
-  init(title, {stateTexts[0], stateTexts[1]});
-}
-
-SwitchableTitledPanel::SwitchableTitledPanel(
-  const QString& title, const std::vector<QString>& stateTexts, QWidget* parent)
+  const QString& title, std::initializer_list<QString> stateTexts, QWidget* parent)
   : QWidget{parent}
 {
   init(title, stateTexts);
 }
 
 void SwitchableTitledPanel::init(
-  const QString& title, const std::vector<QString>& stateTexts)
+  const QString& title, std::initializer_list<QString> stateTexts)
 {
-  contract_pre(stateTexts.size() >= 2);
+  const auto texts = std::vector<QString>{stateTexts};
+  contract_pre(texts.size() >= 2);
 
-  m_titleBar = new ClickableTitleBar{title, stateTexts[1]};
+  m_titleBar = new ClickableTitleBar{title, texts[1]};
   m_divider = new BorderLine{};
   m_stackedLayout = new QStackedLayout{};
 
-  m_panels.reserve(stateTexts.size());
-  for (size_t i = 0; i < stateTexts.size(); ++i)
+  m_panels.reserve(texts.size());
+  for (size_t i = 0; i < texts.size(); ++i)
   {
     // The state text shown on each panel tells the user what the *next* panel is.
     // For panel i, the state text is the name of panel (i+1) % N.
-    const auto nextIndex = (i + 1) % stateTexts.size();
-    m_panels.push_back({new QWidget{}, stateTexts[nextIndex]});
+    const auto nextIndex = (i + 1) % texts.size();
+    m_panels.push_back({new QWidget{}, texts[nextIndex]});
     m_stackedLayout->addWidget(m_panels.back().panel);
   }
 

@@ -75,7 +75,7 @@ QWidget* EntityInspector::createEntityBrowser(
   AppController& appController, MapDocument& document, QWidget* parent)
 {
   auto* panel = new SwitchableTitledPanel{
-    tr("Entity Browser"), {{tr("Browser"), tr("Settings")}}, parent};
+    tr("Entity Browser"), {tr("Browser"), tr("Settings")}, parent};
 
   m_entityBrowser = new EntityBrowser{appController, document};
 

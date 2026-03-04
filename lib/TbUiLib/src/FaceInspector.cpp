@@ -121,7 +121,7 @@ QWidget* FaceInspector::createMaterialBrowser(AppController& appController)
 {
   auto* panel = new SwitchableTitledPanel{
     tr("Material Browser"),
-    std::vector<QString>{tr("Browser"), tr("Grid Browser"), tr("Settings")}};
+    {tr("Browser"), tr("Grid Browser"), tr("Settings")}};
 
   // Panel 0: Classic material browser (OpenGL CellView)
   m_materialBrowser = new MaterialBrowser{appController, m_document};
