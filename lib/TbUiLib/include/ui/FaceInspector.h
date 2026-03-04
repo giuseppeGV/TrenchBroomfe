@@ -73,7 +73,9 @@ private:
 
   void materialSelected(const gl::Material* material);
   void textureBrowserMaterialSelected(
-    const gl::Material* material, const QString& materialName);
+    const gl::Material* material,
+    const QString& materialName,
+    const QString& filePath);
 
   void connectObservers();
   void documentWasLoaded();

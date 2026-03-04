@@ -319,10 +319,11 @@ void TextureBrowserPanel::onItemClicked(QListWidgetItem* item)
   }
 
   const auto materialName = item->data(Qt::UserRole).toString();
+  const auto filePath = item->data(Qt::UserRole + 1).toString();
   const auto* material =
     m_document.map().materialManager().material(materialName.toStdString());
 
-  emit materialSelected(material, materialName);
+  emit materialSelected(material, materialName, filePath);
 }
 
 void TextureBrowserPanel::onItemDoubleClicked(QListWidgetItem* item)
@@ -502,6 +503,7 @@ void TextureBrowserPanel::loadFromExternalDirectory(const std::filesystem::path&
     // The user can configure the game to resolve this later.
     auto* item = new QListWidgetItem{QIcon{pixmap}, fileName};
     item->setData(Qt::UserRole, fileName);
+    item->setData(Qt::UserRole + 1, QString::fromStdString(filePath.string()));
     item->setToolTip(fileName + "\n" + QString::fromStdString(filePath.string()));
 
     m_textureGrid->addItem(item);

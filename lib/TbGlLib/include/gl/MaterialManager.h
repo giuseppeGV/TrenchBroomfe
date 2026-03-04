@@ -62,6 +62,13 @@ public:
   const std::vector<const Material*>& materials() const;
   const std::vector<MaterialCollection>& collections() const;
 
+  /**
+   * Add an external material (e.g. loaded from disk outside the game filesystem).
+   * The material is added to a dedicated "External" collection and the lookup is
+   * updated so that brush faces can resolve it by name.
+   */
+  Material* addExternalMaterial(Material material);
+
 private:
   void addMaterialCollection(MaterialCollection collection);
   void updateMaterials();

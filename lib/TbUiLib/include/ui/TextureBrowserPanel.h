@@ -101,8 +101,12 @@ signals:
    * @param materialName The material/texture name. For engine-loaded materials this is
    *                     the canonical name; for external textures it is the filename
    * stem.
+   * @param filePath The absolute file path on disk, or empty if unavailable.
    */
-  void materialSelected(const gl::Material* material, const QString& materialName);
+  void materialSelected(
+    const gl::Material* material,
+    const QString& materialName,
+    const QString& filePath);
 
 private:
   void createGui();

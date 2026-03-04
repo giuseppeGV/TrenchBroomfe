@@ -23,10 +23,15 @@
 #include <QVBoxLayout>
 
 #include "gl/Material.h"
+#include "gl/MaterialManager.h"
+#include "gl/Texture.h"
+#include "gl/TextureResource.h"
+#include "fs/DiskIO.h"
 #include "mdl/BrushFace.h"
 #include "mdl/BrushFaceAttributes.h"
 #include "mdl/GameConfig.h"
 #include "mdl/GameInfo.h"
+#include "mdl/LoadFreeImageTexture.h"
 #include "mdl/Map.h"
 #include "mdl/Map_Brushes.h"
 #include "mdl/UpdateBrushFaceAttributes.h"
@@ -217,7 +222,7 @@ void FaceInspector::materialSelected(const gl::Material* material)
 }
 
 void FaceInspector::textureBrowserMaterialSelected(
-  const gl::Material* material, const QString& materialName)
+  const gl::Material* material, const QString& materialName, const QString& filePath)
 {
   if (material)
   {
@@ -226,10 +231,46 @@ void FaceInspector::textureBrowserMaterialSelected(
   }
   else if (!materialName.isEmpty())
   {
-    // External texture without a loaded Material - set the name anyway so the engine
-    // can resolve it once the texture path is configured correctly.
     auto& map = m_document.map();
     const auto name = materialName.toStdString();
+
+    // Try to load the external texture from disk if we have a file path
+    if (!filePath.isEmpty())
+    {
+      const auto absPath = std::filesystem::path{filePath.toStdString()};
+
+      // Check if a material with this name already exists (maybe from a previous load)
+      auto* existingMaterial = map.materialManager().material(name);
+      if (!existingMaterial)
+      {
+        // Load the texture from the file on disk
+        auto fileResult = fs::Disk::openFile(absPath);
+        if (fileResult.is_success())
+        {
+          auto reader = fileResult.value()->reader();
+          auto textureResult = mdl::loadFreeImageTexture(reader);
+          if (textureResult.is_success())
+          {
+            auto textureResource =
+              gl::createTextureResource(std::move(textureResult).value());
+            auto newMaterial =
+              gl::Material{name, std::move(textureResource)};
+            newMaterial.setAbsolutePath(absPath);
+
+            existingMaterial =
+              map.materialManager().addExternalMaterial(std::move(newMaterial));
+          }
+        }
+      }
+
+      if (existingMaterial)
+      {
+        materialSelected(existingMaterial);
+        return;
+      }
+    }
+
+    // Fallback: set the name even without a loaded material
     map.setCurrentMaterialName(name);
 
     const auto faces = map.selection().allBrushFaces();
