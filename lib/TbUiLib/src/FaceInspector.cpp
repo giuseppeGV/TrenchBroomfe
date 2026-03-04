@@ -52,7 +52,6 @@
 #include <vector>
 
 
-
 namespace tb::ui
 {
 namespace
