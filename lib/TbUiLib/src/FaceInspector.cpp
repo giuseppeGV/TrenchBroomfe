@@ -25,6 +25,7 @@
 #include "fs/DiskIO.h"
 #include "gl/Material.h"
 #include "gl/MaterialManager.h"
+#include "gl/ResourceManager.h"
 #include "gl/Texture.h"
 #include "gl/TextureResource.h"
 #include "mdl/BrushFace.h"
@@ -252,8 +253,12 @@ void FaceInspector::textureBrowserMaterialSelected(
           auto textureResult = mdl::loadFreeImageTexture(reader);
           if (textureResult.is_success())
           {
+            // Create the resource and register it with the ResourceManager so the
+            // texture gets uploaded to the GPU during the next render cycle.
             auto textureResource =
-              gl::createTextureResource(std::move(textureResult).value());
+              std::make_shared<gl::TextureResource>(std::move(textureResult).value());
+            map.resourceManager().addResource(textureResource);
+
             auto newMaterial = gl::Material{name, std::move(textureResource)};
             newMaterial.setAbsolutePath(absPath);
 

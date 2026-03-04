@@ -97,33 +97,44 @@ Material* MaterialManager::addExternalMaterial(Material material)
 {
   const auto key = kdl::str_to_lower(material.name());
 
-  // If a material with this name already exists, update it
+  // If a material with this name already exists, return it
   if (auto it = m_materialsByName.find(key); it != m_materialsByName.end())
   {
     return it->second;
   }
 
-  // Find or create the "External" collection
+  // Find or create the "External" collection.
+  // We must be careful: pushing to m_collections can reallocate and invalidate all
+  // Material* pointers, so we always call updateMaterials() afterwards.
   static const auto externalPath = std::filesystem::path{"__external__"};
   auto collectionIt = std::ranges::find_if(
     m_collections, [](const auto& c) { return c.path() == externalPath; });
 
   if (collectionIt == m_collections.end())
   {
+    // Reserve space to avoid reallocation when pushing the collection
+    if (m_collections.size() == m_collections.capacity())
+    {
+      m_collections.reserve(m_collections.size() + 4);
+    }
     m_collections.push_back(MaterialCollection{externalPath});
     collectionIt = std::prev(m_collections.end());
     m_logger.info() << "Created external material collection";
   }
 
   material.setCollectionName(externalPath.string());
+  const auto materialName = material.name();
   collectionIt->materials().push_back(std::move(material));
 
-  auto* materialPtr = &collectionIt->materials().back();
-  m_materialsByName.insert(std::make_pair(key, materialPtr));
-  m_materials.push_back(materialPtr);
+  // Rebuild all pointer maps since the push_back above may have reallocated the
+  // internal materials vector, invalidating existing Material* pointers.
+  updateMaterials();
 
-  m_logger.info() << "Added external material: " << materialPtr->name();
-  return materialPtr;
+  m_logger.info() << "Added external material: " << materialName;
+
+  // Return a stable pointer from the freshly rebuilt map
+  auto it = m_materialsByName.find(key);
+  return it != m_materialsByName.end() ? it->second : nullptr;
 }
 
 void MaterialManager::addMaterialCollection(MaterialCollection collection)
