@@ -341,16 +341,16 @@ void TextureBrowserPanel::reloadGrid()
   m_textureGrid->clear();
   m_itemMaterialNames.clear();
 
-  const auto data = m_directoryCombo->currentData().toString();
+  const auto currentDir = m_directoryCombo->currentData().toString();
 
-  if (data == "__all__")
+  if (currentDir == "__all__")
   {
     loadAllCollections();
   }
   else
   {
     // Check if it's an external directory
-    const auto path = std::filesystem::path{data.toStdString()};
+    const auto path = std::filesystem::path{currentDir.toStdString()};
     const auto isExternal =
       std::ranges::find(m_externalDirectories, path) != m_externalDirectories.end();
 
