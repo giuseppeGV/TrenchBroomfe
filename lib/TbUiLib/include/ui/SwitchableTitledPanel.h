@@ -22,6 +22,7 @@
 #include <QWidget>
 
 #include <array>
+#include <vector>
 
 class QStackedLayout;
 
@@ -43,21 +44,32 @@ private:
   ClickableTitleBar* m_titleBar = nullptr;
   BorderLine* m_divider = nullptr;
   QStackedLayout* m_stackedLayout = nullptr;
-  std::array<SwitchablePanel, 2> m_panels;
+  std::vector<SwitchablePanel> m_panels;
 
 public:
+  // Legacy 2-panel constructor (preserves source compatibility)
   explicit SwitchableTitledPanel(
     const QString& title,
     const std::array<QString, 2>& stateTexts,
     QWidget* parent = nullptr);
 
+  // N-panel constructor
+  explicit SwitchableTitledPanel(
+    const QString& title,
+    const std::vector<QString>& stateTexts,
+    QWidget* parent = nullptr);
+
   QWidget* getPanel(size_t index) const;
 
+  size_t panelCount() const;
   size_t currentIndex() const;
   void setCurrentIndex(size_t index);
 
   QByteArray saveState() const;
   bool restoreState(const QByteArray& state);
+
+private:
+  void init(const QString& title, const std::vector<QString>& stateTexts);
 };
 
 } // namespace tb::ui

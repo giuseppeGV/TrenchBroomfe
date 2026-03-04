@@ -36,13 +36,35 @@ namespace tb::ui
 SwitchableTitledPanel::SwitchableTitledPanel(
   const QString& title, const std::array<QString, 2>& stateTexts, QWidget* parent)
   : QWidget{parent}
-  , m_titleBar{new ClickableTitleBar{title, stateTexts[1]}}
-  , m_divider{new BorderLine{}}
-  , m_stackedLayout{new QStackedLayout{}}
-  , m_panels{{{new QWidget{}, stateTexts[1]}, {new QWidget{}, stateTexts[0]}}}
 {
-  m_stackedLayout->addWidget(m_panels[0].panel);
-  m_stackedLayout->addWidget(m_panels[1].panel);
+  init(title, {stateTexts[0], stateTexts[1]});
+}
+
+SwitchableTitledPanel::SwitchableTitledPanel(
+  const QString& title, const std::vector<QString>& stateTexts, QWidget* parent)
+  : QWidget{parent}
+{
+  init(title, stateTexts);
+}
+
+void SwitchableTitledPanel::init(
+  const QString& title, const std::vector<QString>& stateTexts)
+{
+  contract_pre(stateTexts.size() >= 2);
+
+  m_titleBar = new ClickableTitleBar{title, stateTexts[1]};
+  m_divider = new BorderLine{};
+  m_stackedLayout = new QStackedLayout{};
+
+  m_panels.reserve(stateTexts.size());
+  for (size_t i = 0; i < stateTexts.size(); ++i)
+  {
+    // The state text shown on each panel tells the user what the *next* panel is.
+    // For panel i, the state text is the name of panel (i+1) % N.
+    const auto nextIndex = (i + 1) % stateTexts.size();
+    m_panels.push_back({new QWidget{}, stateTexts[nextIndex]});
+    m_stackedLayout->addWidget(m_panels.back().panel);
+  }
 
   auto* outerLayout = new QVBoxLayout{};
   outerLayout->setContentsMargins(0, 0, 0, 0);
@@ -53,15 +75,20 @@ SwitchableTitledPanel::SwitchableTitledPanel(
   setLayout(outerLayout);
 
   connect(m_titleBar, &ClickableTitleBar::titleBarClicked, this, [&]() {
-    setCurrentIndex(1 - currentIndex());
+    setCurrentIndex((currentIndex() + 1) % m_panels.size());
   });
 }
 
 QWidget* SwitchableTitledPanel::getPanel(const size_t index) const
 {
-  contract_pre(index < 2);
+  contract_pre(index < m_panels.size());
 
   return m_panels[index].panel;
+}
+
+size_t SwitchableTitledPanel::panelCount() const
+{
+  return m_panels.size();
 }
 
 size_t SwitchableTitledPanel::currentIndex() const
@@ -89,7 +116,9 @@ bool SwitchableTitledPanel::restoreState(const QByteArray& state)
   int currentIndex;
   stream >> currentIndex;
 
-  if (stream.status() == QDataStream::Ok && currentIndex >= 0 && currentIndex < 2)
+  if (
+    stream.status() == QDataStream::Ok && currentIndex >= 0
+    && currentIndex < int(m_panels.size()))
   {
     setCurrentIndex(size_t(currentIndex));
     return true;

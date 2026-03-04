@@ -22,6 +22,8 @@
 #include "NotifierConnection.h"
 #include "ui/TabBook.h"
 
+#include <QString>
+
 class QSplitter;
 class QWidget;
 
@@ -39,6 +41,7 @@ class CollapsibleTitledPanel;
 class FaceAttribsEditor;
 class MapDocument;
 class MaterialBrowser;
+class TextureBrowserPanel;
 
 class FaceInspector : public TabBookPage
 {
@@ -48,6 +51,7 @@ private:
   QSplitter* m_splitter = nullptr;
   FaceAttribsEditor* m_faceAttribsEditor = nullptr;
   MaterialBrowser* m_materialBrowser = nullptr;
+  TextureBrowserPanel* m_textureBrowserPanel = nullptr;
   QWidget* m_materialBrowserInfo = nullptr;
 
   NotifierConnection m_notifierConnection;
@@ -67,6 +71,8 @@ private:
   QWidget* createMaterialBrowserInfo();
 
   void materialSelected(const gl::Material* material);
+  void textureBrowserMaterialSelected(
+    const gl::Material* material, const QString& materialName);
 
   void connectObservers();
   void documentWasLoaded();

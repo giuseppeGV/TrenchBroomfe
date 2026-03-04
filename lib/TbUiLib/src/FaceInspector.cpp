@@ -36,6 +36,7 @@
 #include "ui/MaterialBrowser.h"
 #include "ui/MaterialCollectionEditor.h"
 #include "ui/QStyleUtils.h"
+#include "ui/TextureBrowserPanel.h"
 #include "ui/Splitter.h"
 #include "ui/SwitchableTitledPanel.h"
 #include "ui/ViewConstants.h"
@@ -117,9 +118,11 @@ QWidget* FaceInspector::createFaceAttribsEditor(AppController& appController)
 
 QWidget* FaceInspector::createMaterialBrowser(AppController& appController)
 {
-  auto* panel =
-    new SwitchableTitledPanel{tr("Material Browser"), {{tr("Browser"), tr("Settings")}}};
+  auto* panel = new SwitchableTitledPanel{
+    tr("Material Browser"),
+    std::vector<QString>{tr("Browser"), tr("Grid Browser"), tr("Settings")}};
 
+  // Panel 0: Classic material browser (OpenGL CellView)
   m_materialBrowser = new MaterialBrowser{appController, m_document};
 
   auto* materialBrowserLayout = new QVBoxLayout{};
@@ -127,6 +130,21 @@ QWidget* FaceInspector::createMaterialBrowser(AppController& appController)
   materialBrowserLayout->addWidget(m_materialBrowser, 1);
   panel->getPanel(0)->setLayout(materialBrowserLayout);
 
+  // Panel 1: New texture grid browser (native Qt, directory picker)
+  m_textureBrowserPanel = new TextureBrowserPanel{m_document};
+
+  auto* textureBrowserLayout = new QVBoxLayout{};
+  textureBrowserLayout->setContentsMargins(0, 0, 0, 0);
+  textureBrowserLayout->addWidget(m_textureBrowserPanel, 1);
+  panel->getPanel(1)->setLayout(textureBrowserLayout);
+
+  connect(
+    m_textureBrowserPanel,
+    &TextureBrowserPanel::materialSelected,
+    this,
+    &FaceInspector::textureBrowserMaterialSelected);
+
+  // Panel 2: Collection settings editor
   auto* materialCollectionEditor = new MaterialCollectionEditor{m_document};
   m_materialBrowserInfo = createMaterialBrowserInfo();
 
@@ -136,7 +154,7 @@ QWidget* FaceInspector::createMaterialBrowser(AppController& appController)
   materialCollectionEditorLayout->addWidget(materialCollectionEditor, 1);
   materialCollectionEditorLayout->addWidget(m_materialBrowserInfo, 0);
 
-  panel->getPanel(1)->setLayout(materialCollectionEditorLayout);
+  panel->getPanel(2)->setLayout(materialCollectionEditorLayout);
 
   return panel;
 }
@@ -194,6 +212,30 @@ void FaceInspector::materialSelected(const gl::Material* material)
         map.currentMaterialName() != material->name()
           ? material->name()
           : mdl::BrushFaceAttributes::NoMaterialName);
+    }
+  }
+}
+
+void FaceInspector::textureBrowserMaterialSelected(
+  const gl::Material* material, const QString& materialName)
+{
+  if (material)
+  {
+    // If we have a real material pointer, use the standard path
+    materialSelected(material);
+  }
+  else if (!materialName.isEmpty())
+  {
+    // External texture without a loaded Material - set the name anyway so the engine
+    // can resolve it once the texture path is configured correctly.
+    auto& map = m_document.map();
+    const auto name = materialName.toStdString();
+    map.setCurrentMaterialName(name);
+
+    const auto faces = map.selection().allBrushFaces();
+    if (!faces.empty())
+    {
+      setBrushFaceAttributes(map, {.materialName = name});
     }
   }
 }
