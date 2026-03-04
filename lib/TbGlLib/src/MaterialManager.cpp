@@ -105,9 +105,8 @@ Material* MaterialManager::addExternalMaterial(Material material)
 
   // Find or create the "External" collection
   static const auto externalPath = std::filesystem::path{"__external__"};
-  auto collectionIt = std::ranges::find_if(m_collections, [](const auto& c) {
-    return c.path() == externalPath;
-  });
+  auto collectionIt = std::ranges::find_if(
+    m_collections, [](const auto& c) { return c.path() == externalPath; });
 
   if (collectionIt == m_collections.end())
   {

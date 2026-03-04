@@ -104,9 +104,7 @@ signals:
    * @param filePath The absolute file path on disk, or empty if unavailable.
    */
   void materialSelected(
-    const gl::Material* material,
-    const QString& materialName,
-    const QString& filePath);
+    const gl::Material* material, const QString& materialName, const QString& filePath);
 
 private:
   void createGui();

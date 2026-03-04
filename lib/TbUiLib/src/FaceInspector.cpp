@@ -22,11 +22,11 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+#include "fs/DiskIO.h"
 #include "gl/Material.h"
 #include "gl/MaterialManager.h"
 #include "gl/Texture.h"
 #include "gl/TextureResource.h"
-#include "fs/DiskIO.h"
 #include "mdl/BrushFace.h"
 #include "mdl/BrushFaceAttributes.h"
 #include "mdl/GameConfig.h"
@@ -49,6 +49,7 @@
 
 #include <algorithm>
 #include <vector>
+
 
 
 namespace tb::ui
@@ -253,8 +254,7 @@ void FaceInspector::textureBrowserMaterialSelected(
           {
             auto textureResource =
               gl::createTextureResource(std::move(textureResult).value());
-            auto newMaterial =
-              gl::Material{name, std::move(textureResource)};
+            auto newMaterial = gl::Material{name, std::move(textureResource)};
             newMaterial.setAbsolutePath(absPath);
 
             existingMaterial =
